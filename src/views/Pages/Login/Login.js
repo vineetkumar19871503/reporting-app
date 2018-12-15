@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button, Card, CardBody, CardGroup, Col, Container, Form, Input, InputGroup, InputGroupAddon, InputGroupText, Row } from 'reactstrap';
 import { login } from '../../../actions/UserAction';
 import { ToastContainer, ToastStore } from 'react-toasts';
-const config = require('../../../config.json');
+import config from '../../../config.js';
 
 class Login extends Component {
   constructor(props) {
@@ -29,7 +29,7 @@ class Login extends Component {
     self.validateForm(() => {
       axios.post(config.apiUrl + 'users/login', self.state['fields'])
         .then(res => {
-          if (res.data.isErr) {
+          if (res.data.is_err) {
             ToastStore.error(res.data.message);
           } else {
             self.props.login(res.data.data);

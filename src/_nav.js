@@ -18,6 +18,28 @@ export default {
           name: 'Add Bill',
           url: '/bills/add',
           icon: 'icon-cursor',
+        },
+        {
+          name: 'Bills List',
+          url: '/bills/list',
+          icon: 'icon-cursor',
+        }
+      ]
+    },
+    {
+      name: 'Users',
+      url: '/users',
+      icon: 'icon-cursor',
+      children: [
+        {
+          name: 'Add User',
+          url: '/users/add',
+          icon: 'icon-cursor',
+        },
+        {
+          name: 'Users List',
+          url: '/users/list',
+          icon: 'icon-cursor',
         }
       ]
     },

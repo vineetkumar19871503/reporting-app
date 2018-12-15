@@ -15,8 +15,8 @@ import {
   Label,
   Row
 } from 'reactstrap';
-const config = require('../../config.json');
-class AddBillComponent extends React.Component {
+import config from '../../config.js';
+class AddComponent extends React.Component {
   errors = {};
   constructor(props) {
     super(props);
@@ -91,10 +91,11 @@ class AddBillComponent extends React.Component {
         }
       )
         .then(res => {
-          if (res.data.isErr) {
+          if (res.data.is_err) {
             ToastStore.error(res.data.message);
           } else {
             ToastStore.success(res.data.message);
+            self.props.history.push('/bills/list');
           }
         })
         .catch(err => {
@@ -161,4 +162,4 @@ const mapStateToProps = (state) => {
     user: state.user
   }
 }
-export default connect(mapStateToProps)(AddBillComponent);
+export default connect(mapStateToProps)(AddComponent);
