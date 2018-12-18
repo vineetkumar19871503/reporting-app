@@ -25,6 +25,29 @@ const DefaultFooter = React.lazy(() => import('./DefaultFooter'));
 const DefaultHeader = React.lazy(() => import('./DefaultHeader'));
 
 class DefaultLayout extends Component {
+  constructor(props) {
+    super(props);
+    if (this.props.user.type === 'admin') {
+      navigation.items.push({
+        name: 'Users',
+        url: '/users',
+        icon: 'icon-user',
+        children: [
+          {
+            name: 'Add User',
+            url: '/users/add',
+            icon: 'icon-plus',
+          },
+          {
+            name: 'Users List',
+            url: '/users/list',
+            icon: 'icon-list',
+          }
+        ]
+      });
+    }
+    this.state = { 'navItems': navigation };
+  }
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
   signOut(e) {
     e.preventDefault();
@@ -32,7 +55,7 @@ class DefaultLayout extends Component {
   }
   componentWillMount() {
     const user = this.props.user;
-    if(!user || (typeof user === 'object' && !Object.keys(user).length)) {
+    if (!user || (typeof user === 'object' && !Object.keys(user).length)) {
       this.props.history.push('/login');
     }
   }
@@ -40,8 +63,8 @@ class DefaultLayout extends Component {
     return (
       <div className="app">
         <AppHeader fixed>
-          <Suspense  fallback={this.loading()}>
-            <DefaultHeader onLogout={e=>this.signOut(e)}/>
+          <Suspense fallback={this.loading()}>
+            <DefaultHeader onLogout={e => this.signOut(e)} />
           </Suspense>
         </AppHeader>
         <div className="app-body">
@@ -49,13 +72,13 @@ class DefaultLayout extends Component {
             <AppSidebarHeader />
             <AppSidebarForm />
             <Suspense>
-            <AppSidebarNav navConfig={navigation} {...this.props} />
+              <AppSidebarNav navConfig={navigation} {...this.props} />
             </Suspense>
             <AppSidebarFooter />
             <AppSidebarMinimizer />
           </AppSidebar>
           <main className="main">
-            <AppBreadcrumb appRoutes={routes}/>
+            <AppBreadcrumb appRoutes={routes} />
             <Container fluid>
               <Suspense fallback={this.loading()}>
                 <Switch>

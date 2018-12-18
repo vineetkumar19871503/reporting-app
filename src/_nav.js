@@ -12,37 +12,37 @@ export default {
     {
       name: 'Bills',
       url: '/bills',
-      icon: 'icon-cursor',
+      icon: 'icon-folder',
       children: [
         {
           name: 'Add Bill',
           url: '/bills/add',
-          icon: 'icon-cursor',
+          icon: 'icon-plus',
         },
         {
           name: 'Bills List',
           url: '/bills/list',
-          icon: 'icon-cursor',
+          icon: 'icon-list',
         }
       ]
     },
-    {
-      name: 'Users',
-      url: '/users',
-      icon: 'icon-cursor',
-      children: [
-        {
-          name: 'Add User',
-          url: '/users/add',
-          icon: 'icon-cursor',
-        },
-        {
-          name: 'Users List',
-          url: '/users/list',
-          icon: 'icon-cursor',
-        }
-      ]
-    },
+    // {
+    //   name: 'Users',
+    //   url: '/users',
+    //   icon: 'icon-user',
+    //   children: [
+    //     {
+    //       name: 'Add User',
+    //       url: '/users/add',
+    //       icon: 'icon-plus',
+    //     },
+    //     {
+    //       name: 'Users List',
+    //       url: '/users/list',
+    //       icon: 'icon-list',
+    //     }
+    //   ]
+    // },
     // {
     //   name: 'Buttons',
     //   url: '/buttons',
