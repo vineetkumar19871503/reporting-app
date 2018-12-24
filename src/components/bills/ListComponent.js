@@ -142,7 +142,6 @@ class ListComponent extends React.Component {
             </CardHeader>
             <CardBody>
               <ToastContainer store={ToastStore} />
-
               <Form onSubmit={this.searchBill}>
                 <Row>
                   <Col md="3">
