@@ -95,28 +95,40 @@ class ListComponent extends React.Component {
     if (!_s.endDate) {
       delete _s.endDate;
     }
-    if(Object.keys(_s).length) {
+    if (Object.keys(_s).length) {
       this.getBills(_s);
     }
   }
   componentDidMount() {
+    document.title = "Bills";
     this.getBills();
+  }
+  getAmount(amt) {
+    amt = Math.round(amt);
+    return methods.moneyToWords(amt);
   }
   getBills(params) {
     const self = this;
     const p = {
       headers: { 'Authorization': 'Bearer ' + self.props.user.token }
     };
-    if(params) {
+    if (params) {
       p.params = params;
     }
+    self.showLoader();
     axios.get(config.apiUrl + 'bills/list', p)
       .then(res => {
+        self.showLoader(false);
         self.setState({ 'bills': res.data.data });
       })
       .catch(err => {
+        self.showLoader(false);
         ToastStore.error(err.message);
       });
+  }
+  showLoader(show = true) {
+    const ldr = document.getElementById('ajax-loader-container');
+    show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
   }
   render() {
     const _p = this.state.printData;
@@ -130,36 +142,43 @@ class ListComponent extends React.Component {
             </CardHeader>
             <CardBody>
               <ToastContainer store={ToastStore} />
-              <Col md="12">
-                <Form onSubmit={this.searchBill}>
-                  <Col md="4">
+
+              <Form onSubmit={this.searchBill}>
+                <Row>
+                  <Col md="3">
                     <FormGroup>
                       <Label htmlFor="k_number">K Number</Label>
                       <Input type="text" id="k_number" value={this.state.search.k_number} onChange={e => this.changeInput('k_number', e.target.value)} placeholder="Enter K Number" />
                     </FormGroup>
                   </Col>
-                  <Col md="4">
+                  <Col md="3">
                     <FormGroup>
-                      <Label htmlFor="startDate">Date From</Label>
+                      <Label htmlFor="startDate">Date From</Label><br />
                       <DatePicker
+                        className='form-control'
                         selected={this.state.search.startDate}
                         onChange={date => this.changeInput('startDate', date)}
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="4">
+                  <Col md="3">
                     <FormGroup>
-                      <Label htmlFor="endDate">Date To</Label>
+                      <Label htmlFor="endDate">Date To</Label><br />
                       <DatePicker
+                        className='form-control'
                         selected={this.state.search.endDate}
                         onChange={date => this.changeInput('endDate', date)}
                       />
                     </FormGroup>
                   </Col>
-                  <Button color="primary" className="px-4">Search</Button>
-                  <br />
-                </Form>
-              </Col>
+                  <Col md="3">
+                    <br />
+                    <div style={{paddingTop:'6px'}}>
+                    <Button color="primary" className="px-4">Search</Button>
+                    </div>
+                  </Col>
+                </Row>
+              </Form>
               <ReactTable
                 data={this.state.bills}
                 columns={this.state.cols}
@@ -236,7 +255,7 @@ class ListComponent extends React.Component {
                       Disclaimer: Payment through Cheque or DD are subject to realization.
                     </div>
                     <div style={{ 'marginTop': '30px' }}>
-                      Received Amount Rs. {_p.amount.toFixed(4)} ( Rupees {methods.moneyToWords(_p.amount)} Only )
+                      Received Amount Rs. {_p.amount.toFixed(4)} ( Rupees {this.getAmount(_p.amount)} Only )
                     </div>
                     <div style={{ 'textAlign': 'center', 'fontStyle': 'italic', 'fontSize': '15px', 'marginTop': '40px' }}>
                       (This is a computer generated receipt and requires no signature)

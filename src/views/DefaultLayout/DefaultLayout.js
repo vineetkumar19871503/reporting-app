@@ -1,8 +1,11 @@
 import React, { Component, Suspense } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import { ToastContainer, ToastStore } from 'react-toasts';
+import { logout } from '../../actions/UserAction';
+import axios from 'axios';
 import { Container } from 'reactstrap';
 import { connect } from 'react-redux';
-
+import config from '../../config';
 import {
   AppAside,
   AppBreadcrumb,
@@ -50,18 +53,38 @@ class DefaultLayout extends Component {
   }
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
   signOut(e) {
-    e.preventDefault();
+    if(e) {
+      e.preventDefault();
+    }
+    this.props.logout();
     this.props.history.replace('/login');
   }
   componentWillMount() {
     const user = this.props.user;
     if (!user || (typeof user === 'object' && !Object.keys(user).length)) {
       this.props.history.push('/login');
+    } else {
+      const self = this;
+      axios.get(config.apiUrl + 'users/checkSession', {
+        headers: { 'Authorization': 'Bearer ' + user }
+      })
+        .then(res => {
+        })
+        .catch(err => {
+          if (err.response && err.response.data) {
+            ToastStore.error(err.response.data.message);
+            if(err.response.data.message==='User session expired'){
+              self.signOut()
+              self.props.history.push('/login');
+            }
+          }
+        });
     }
   }
   render() {
     return (
       <div className="app">
+        <ToastContainer store={ToastStore} />
         <AppHeader fixed>
           <Suspense fallback={this.loading()}>
             <DefaultHeader onLogout={e => this.signOut(e)} />
@@ -119,4 +142,9 @@ const mapStateToProps = state => {
     user: state.user
   }
 }
-export default connect(mapStateToProps)(DefaultLayout);
+const mapDispatchToProps = dispatch => {
+  return {
+    logout: () => dispatch(logout())
+  }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(DefaultLayout);

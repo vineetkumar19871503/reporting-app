@@ -4,7 +4,7 @@ import { Card, CardBody, CardHeader, Col, Row } from 'reactstrap';
 
 class DashboardComponent extends React.Component {
   componentDidMount() {
-    // console.log(this.props.user);
+    document.title = "Dashboard";
   }
   render() {
     return <div className="animated fadeIn">
@@ -12,22 +12,10 @@ class DashboardComponent extends React.Component {
         <Col xs="12">
           <Card>
             <CardHeader>
-              <strong>Users</strong>
+              <strong>Dashboard</strong>
             </CardHeader>
             <CardBody>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>abc</td>
-                  </tr>
-                </tbody>
-              </table>
-
+              <h1>Welcome</h1>
             </CardBody>
           </Card>
         </Col>

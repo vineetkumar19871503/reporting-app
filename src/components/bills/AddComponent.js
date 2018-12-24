@@ -5,7 +5,7 @@ import { ToastContainer, ToastStore } from 'react-toasts';
 import {
   Button,
   Card,
-  CardBody,
+  CardBody, 
   CardFooter,
   CardHeader,
   Col,
@@ -36,6 +36,7 @@ class AddComponent extends React.Component {
     this.resetForm = this.resetForm.bind(this);
   }
   componentDidMount() {
+    document.title = "Add New Bill";
     this.getConsumers();
   }
   changeInput(field, value) {
@@ -53,12 +54,18 @@ class AddComponent extends React.Component {
       }
     });
   }
+  showLoader(show = true) {
+    const ldr = document.getElementById('ajax-loader-container');
+    show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
+  }
   getConsumers(keyword) {
     const self = this;
+    self.showLoader();
     axios.get(config.apiUrl + 'consumers/list', {
       headers: { 'Authorization': 'Bearer ' + self.props.user.token }
     })
       .then(res => {
+        self.showLoader(false);
         const consumers = res.data.data.map(dt => {
           dt.value = dt.consumer_name;
           dt.name = dt.k_number;
@@ -67,6 +74,7 @@ class AddComponent extends React.Component {
         self.setState({ 'consumers': consumers });
       })
       .catch(err => {
+        self.showLoader(false);
         ToastStore.error(err.message);
       });
   }
@@ -130,6 +138,7 @@ class AddComponent extends React.Component {
     e.preventDefault();
     const self = this;
     self.validateForm(function () {
+      self.showLoader();
       const fields = self.state.fields;
       fields.added_by = self.props.user._id;
       axios.post(
@@ -142,6 +151,7 @@ class AddComponent extends React.Component {
         }
       )
         .then(res => {
+          self.showLoader(false);
           if (res.data.is_err) {
             ToastStore.error(res.data.message);
           } else {
@@ -150,6 +160,7 @@ class AddComponent extends React.Component {
           }
         })
         .catch(err => {
+          self.showLoader(false);
           ToastStore.error(err.message);
         });
     });
@@ -159,12 +170,12 @@ class AddComponent extends React.Component {
       <Row>
         <Col>
           <Card>
+          <ToastContainer store={ToastStore} />
             <CardHeader>
               <strong>Add New Bill</strong>
             </CardHeader>
             <Form onSubmit={this.saveBill}>
               <CardBody>
-                <ToastContainer store={ToastStore} />
                 <FormGroup>
                   <Label htmlFor="k_number">K Number</Label><br />
                   <div className="custom-form-field">

@@ -6,6 +6,7 @@ const AddBillComponent = React.lazy(() => import('./components/bills/AddComponen
 const BillsListingComponent = React.lazy(() => import('./components/bills/ListComponent'));
 const UsersListingComponent = React.lazy(() => import('./components/users/ListComponent'));
 const AddUserComponent = React.lazy(() => import('./components/users/AddComponent'));
+const EditUserComponent = React.lazy(() => import('./components/users/EditComponent'));
 const routes = [
   { path: '/', exact: true, name: 'Home', component: DefaultLayout },
   { path: '/dashboard', name: 'Dashboard', component: DashboardComponent },
@@ -13,6 +14,7 @@ const routes = [
   { path: '/bills/list', name: 'Bills List', component: BillsListingComponent },
   { path: '/users/list', name: 'Users List', component: UsersListingComponent },
   { path: '/users/add', name: 'Add User', component: AddUserComponent },
+  { path: '/users/edit/:id', name: 'Edit User', component: EditUserComponent }
 ];
 
 export default routes;

@@ -27,19 +27,41 @@ class ListComponent extends React.Component {
         {
           'Header': 'Name',
           'accessor': 'name'
+        },
+        {
+          'Header': 'Actions',
+          Cell: row => (
+            <div className='text-center'><button onClick={() => this.navToEditPage(row)}>Edit</button></div>
+          )
         }
       ]
     };
   }
+  navToEditPage(data) {
+    return alert('Under construction');
+    this.props.history.push('/users/edit/' + data.original._id);
+  }
+  showLoader(show = true) {
+    const ldr = document.getElementById('ajax-loader-container');
+    show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
+  }
   componentDidMount() {
+    if (this.props.user.type !== 'admin') {
+      ToastStore.error("You are not authorized to perform this action");
+      this.props.history.push('/dashboard');
+    }
+    document.title = "Users";
     const self = this;
+    self.showLoader();
     axios.get(config.apiUrl + 'users/list', {
       headers: { 'Authorization': 'Bearer ' + self.props.user.token }
     })
       .then(res => {
-        self.setState({'users': res.data.data});
+        self.showLoader(false);
+        self.setState({ 'users': res.data.data });
       })
       .catch(err => {
+        self.showLoader(false);
         ToastStore.error(err.message);
       });
   }

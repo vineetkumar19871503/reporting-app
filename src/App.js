@@ -33,11 +33,21 @@ const Page500 = Loadable({
   loading
 });
 
-class App extends Component {
+const AjaxLoader = () => {
+  return (
+    <div id='ajax-loader-container' className='disp-none'>
+      <div className='ajax-overlay'></div>
+      <div className='ajax-loader'></div>
+    </div>
+  )
+}
 
+class App extends Component {
   render() {
     return (
-      <BrowserRouter>
+      <div>
+        <AjaxLoader />
+        <BrowserRouter>
           <Switch>
             <Route exact path="/login" name="Login Page" component={Login} />
             <Route exact path="/register" name="Register Page" component={Register} />
@@ -45,7 +55,8 @@ class App extends Component {
             <Route exact path="/500" name="Page 500" component={Page500} />
             <Route path="/" name="Home" component={DefaultLayout} />
           </Switch>
-      </BrowserRouter>
+        </BrowserRouter>
+      </div>
     );
   }
 }

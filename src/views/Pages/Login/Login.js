@@ -9,7 +9,7 @@ import config from '../../../config.js';
 class Login extends Component {
   constructor(props) {
     super(props);
-    this.state = { 'fields': { 'email': '', 'password': '' }, 'errors': {} };
+    this.state = { 'fields': { 'email': 'admin@admin.com', 'password': 'abc@123' }, 'errors': {} };
     this.login = this.login.bind(this);
   }
   componentWillMount() {
@@ -17,6 +17,13 @@ class Login extends Component {
     if (typeof user === 'object' && Object.keys(user).length) {
       this.props.history.replace('/dashboard');
     }
+  }
+  componentDidMount() {
+    document.title = "Login";
+  }
+  showLoader(show = true) {
+    const ldr = document.getElementById('ajax-loader-container');
+    show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
   }
   changeInput(field, value) {
     const state = Object.assign({}, this.state);
@@ -27,8 +34,10 @@ class Login extends Component {
     const self = this;
     e.preventDefault();
     self.validateForm(() => {
+      self.showLoader();
       axios.post(config.apiUrl + 'users/login', self.state['fields'])
         .then(res => {
+          self.showLoader(false);
           if (res.data.is_err) {
             ToastStore.error(res.data.message);
           } else {
@@ -37,6 +46,7 @@ class Login extends Component {
           }
         })
         .catch(err => {
+          self.showLoader(false);
           ToastStore.error(err.message);
         });
     });
@@ -91,7 +101,7 @@ class Login extends Component {
                             <i className="icon-user"></i>
                           </InputGroupText>
                         </InputGroupAddon>
-                        <Input type="text" onChange={e => this.changeInput('email', e.target.value)} placeholder="Email" autoComplete="username" />
+                        <Input type="text" value={this.state.fields.email} onChange={e => this.changeInput('email', e.target.value)} placeholder="Email" autoComplete="username" />
                         <span className="form-err">{this.state.errors["email"]}</span>
                       </InputGroup>
                       <InputGroup className="mb-4">
@@ -100,7 +110,7 @@ class Login extends Component {
                             <i className="icon-lock"></i>
                           </InputGroupText>
                         </InputGroupAddon>
-                        <Input type="password" onChange={e => this.changeInput('password', e.target.value)} placeholder="Password" autoComplete="current-password" />
+                        <Input type="password" value={this.state.fields.password} onChange={e => this.changeInput('password', e.target.value)} placeholder="Password" autoComplete="current-password" />
                         <span className="form-err">{this.state.errors["password"]}</span>
                       </InputGroup>
                       <Row>

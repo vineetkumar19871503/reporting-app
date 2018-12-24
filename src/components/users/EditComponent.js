@@ -16,7 +16,7 @@ import {
   Row
 } from 'reactstrap';
 import config from '../../config.js';
-class AddUserComponent extends React.Component {
+class EditUserComponent extends React.Component {
   errors = {};
   constructor(props) {
     super(props);
@@ -30,12 +30,41 @@ class AddUserComponent extends React.Component {
     };
     this.saveUser = this.saveUser.bind(this);
   }
+  showLoader(show = true) {
+    const ldr = document.getElementById('ajax-loader-container');
+    show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
+  }
   componentDidMount() {
-    if(this.props.user.type!=='admin') {
+    if (this.props.user.type !== 'admin') {
       ToastStore.error("You are not authorized to perform this action");
       this.props.history.push('/dashboard');
     }
-    document.title = "Add New User";
+    document.title = "Edit User";
+    const self = this;
+    self.showLoader();
+    axios.get(
+      config.apiUrl + 'users/getUserById?id=' + this.props.match.params.id,
+      {
+        'headers': {
+          'Authorization': 'Bearer ' + self.props.user.token
+        }
+      }
+    )
+      .then(res => {
+        self.showLoader(false);
+        const user = res.data.data[0];
+        self.setState({
+          'fields': {
+            'name': user.name,
+            'email': user.email,
+            'password': user.password
+          }
+        });
+      })
+      .catch(err => {
+        self.showLoader(false);
+        ToastStore.error(err.message);
+      });
   }
   changeInput(field, value) {
     const state = Object.assign({}, this.state);
@@ -89,17 +118,12 @@ class AddUserComponent extends React.Component {
     }
     return isFieldValid;
   }
-  showLoader(show = true) {
-    const ldr = document.getElementById('ajax-loader-container');
-    show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
-  }
   saveUser(e) {
     e.preventDefault();
     const self = this;
     self.validateForm(function () {
       const fields = self.state.fields;
       fields.added_by = self.props.user._id;
-      self.showLoader();
       axios.post(
         config.apiUrl + 'users/add',
         fields,
@@ -110,7 +134,6 @@ class AddUserComponent extends React.Component {
         }
       )
         .then(res => {
-          self.showLoader(false);
           if (res.data.is_err) {
             ToastStore.error(res.data.message);
           } else {
@@ -119,30 +142,30 @@ class AddUserComponent extends React.Component {
           }
         })
         .catch(err => {
-          self.showLoader(false);
           ToastStore.error(err.message);
         });
     });
   }
   render() {
+    const _f = this.state.fields;
     return <div className="animated fadeIn">
       <Row>
         <Col>
           <Card>
             <CardHeader>
-              <strong>Add New User</strong>
+              <strong>Edit User</strong>
             </CardHeader>
             <Form onSubmit={this.saveUser}>
               <CardBody>
                 <ToastContainer store={ToastStore} />
                 <FormGroup>
                   <Label htmlFor="name">Name</Label>
-                  <Input type="text" id="name" onChange={e => this.changeInput('name', e.target.value)} placeholder="Enter Name" />
+                  <Input type="text" id="name" value={_f.name} onChange={e => this.changeInput('name', e.target.value)} placeholder="Enter Name" />
                   <span className="form-err">{this.state.errors["name"]}</span>
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="email">Email</Label>
-                  <Input type="text" id="email" onChange={e => this.changeInput('email', e.target.value)} placeholder="Enter Email" />
+                  <Input type="text" id="email" value={_f.email} onChange={e => this.changeInput('email', e.target.value)} placeholder="Enter Email" />
                   <span className="form-err">{this.state.errors["email"]}</span>
                 </FormGroup>
                 <FormGroup>
@@ -183,4 +206,4 @@ const mapStateToProps = (state) => {
     user: state.user
   }
 }
-export default connect(mapStateToProps)(AddUserComponent);
+export default connect(mapStateToProps)(EditUserComponent);
