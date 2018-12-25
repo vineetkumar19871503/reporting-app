@@ -5,7 +5,7 @@ import { ToastContainer, ToastStore } from 'react-toasts';
 import {
   Button,
   Card,
-  CardBody, 
+  CardBody,
   CardFooter,
   CardHeader,
   Col,
@@ -17,11 +17,13 @@ import {
 } from 'reactstrap';
 import ReactAutocomplete from 'react-autocomplete';
 import config from '../../config.js';
+import methods from '../../globals/methods';
 class AddComponent extends React.Component {
   errors = {};
   constructor(props) {
     super(props);
     this.state = {
+      'printData': {},
       'shouldOpenAc': false,
       'consumers': [],
       'fields': {
@@ -85,6 +87,13 @@ class AddComponent extends React.Component {
     formIsValid = this._validateField('required', 'consumer_name', formIsValid);
     formIsValid = this._validateField('required', 'amount', formIsValid);
     formIsValid = this._validateField('number', 'amount', formIsValid);
+    if (!this.errors['k_number']) {
+      const kNum = this.state.fields.k_number.trim();
+      if (kNum.length !== 11) {
+        formIsValid = false;
+        this.errors.k_number = "The length of K Number should be 11";
+      }
+    }
     // formIsValid = this._validateField('required', 'payment_mode', formIsValid);
     this.setState({ 'errors': this.errors });
     if (formIsValid) {
@@ -119,7 +128,7 @@ class AddComponent extends React.Component {
   onKnoChange(val) {
     const _s = Object.assign({}, this.state);
     let shouldOpenAc = false;
-    if (val.length >= 1) {
+    if (val.length >= 8) {
       shouldOpenAc = true;
     }
     _s.fields.k_number = val;
@@ -133,6 +142,23 @@ class AddComponent extends React.Component {
     _s.fields.consumer_name = item.consumer_name;
     _s.shouldOpenAc = false;
     this.setState(_s);
+  }
+  getTime(date) {
+    date = new Date(date);
+    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' ' + this.addZeroToTime(date.getHours()) + ':' + this.addZeroToTime(date.getMinutes()) + ':' + this.addZeroToTime(date.getSeconds())
+  }
+  addZeroToTime(t) {
+    if (t < 10) {
+      t = "0" + t;
+    }
+    return t;
+  }
+  printBill() {
+    methods.print("printContainer");
+  }
+  getAmount(amt) {
+    amt = Math.round(amt);
+    return methods.moneyToWords(amt);
   }
   saveBill(e) {
     e.preventDefault();
@@ -157,6 +183,7 @@ class AddComponent extends React.Component {
           } else {
             ToastStore.success(res.data.message);
             self.resetForm();
+            self.setState({ 'printData': res.data.data }, () => self.printBill());
           }
         })
         .catch(err => {
@@ -166,11 +193,12 @@ class AddComponent extends React.Component {
     });
   }
   render() {
+    const _p = this.state.printData;
     return <div className="animated fadeIn">
       <Row>
         <Col>
           <Card>
-          <ToastContainer store={ToastStore} />
+            <ToastContainer store={ToastStore} />
             <CardHeader>
               <strong>Add New Bill</strong>
             </CardHeader>
@@ -181,10 +209,9 @@ class AddComponent extends React.Component {
                   <div className="custom-form-field">
                     <ReactAutocomplete
                       items={this.state.consumers}
-                      inputProps={{ placeholder: 'Enter K Number' }}
-                      shouldItemRender={(item, value) => item.k_number.trim().length > 0}
+                      inputProps={{ placeholder: 'Enter K Number', maxLength: "11" }}
+                      shouldItemRender={(item, value) => this.state.shouldOpenAc && item.k_number.toLowerCase().indexOf(value.toLowerCase()) > -1}
                       getItemValue={item => item.k_number}
-                      open={this.state.shouldOpenAc}
                       renderItem={(item, highlighted) =>
                         <div
                           key={item._id}
@@ -199,7 +226,7 @@ class AddComponent extends React.Component {
                       onSelect={(value, item) => this.onKnoSelect(value, item)}
                     />
                   </div>
-                  <span className="form-err">{this.state.errors["consumer_name"]}</span>
+                  <span className="form-err">{this.state.errors["k_number"]}</span>
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="consumer_name">Consumer Name</Label>
@@ -236,12 +263,105 @@ class AddComponent extends React.Component {
           </Card>
         </Col>
       </Row>
+      {
+        Object.keys(_p).length > 0 ?
+          <div id="printContainer" style={{ 'padding': '20px', 'display': 'none' }}>
+            <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
+              <h2>
+                Government of Rajasthan
+                        <br />
+                District e-Governance Society (Jodhpur)
+                      </h2>
+            </div>
+            <table border="0" cellPadding="0" cellSpacing="0" width="100%" style={{ 'marginBottom': '15px' }}>
+              <tbody>
+                <tr>
+                  <td width="50%" style={styles.allBorders}>
+                    <div style={{ 'padding': '15px' }}>
+                      {/* <img src="https://lh3.googleusercontent.com/I_c3oulsqXYrcnW1i4XQ6QWVcQcqkWS9DJnddwxAG0ZzLUHvAWeuJJj_IAGDsWqRatYJsGY4_bQFiWeUr3Y7veotewy87RmT-o2ylMA6S0jlOB8cmVCLBQcr8D7IiT_gFItG-RM6X1fDdKv1Snwl30aYfnVFH6niYjYuOAVQlyaeVfM117Uj7gCi9oE0u_juuhC-PCWYDLJxbBAJN21BePPd4uN7117TCs0B4ygExe07cnd-EFUIAVm1Ii_X4CPguy_AgNlPA87smOd6ak79wnJxCibdMx0dRWZDGMMbSZOYHjneLpukMTpTcxgA0D6JKAPlxZDZ3zp8_sr-_2lFd5LXidPkW6Cg6R_8qIdRVGGLBmhFPLvqlw19pi1eluHyCxoVwHBPjHKCi8XJXGl1n7CMGx7Nur96TIlHGd0CqZvMzGaHmhmjUeBlWIcBZ3hdFcOve2oaFZKdOgblYEyP_rvEFwUkqVAwSo7VgQQzMi-m3fzElgeFolufrwkQl94YGA5cNw_aTEVf7rS9i-92_Nnj-R2IjkzmVp93kliBuLHWzlq7H4f_mQnehzvQUKnEvS4Xxc8o4Jr2MphRfSV96G0ZSb9K51nS=w1366-h657" /> */}
+                    </div>
+                  </td>
+                  <td style={styles.allBordersExceptLeft}>
+                    <div style={{ 'padding': '15px' }}>
+                      Code: K21005887 [ AKSH.AKSH.2366.JOD ] <br />
+                      Kiosk: AKSH OPTIFIBRE LTD <br />
+                      LSP: AKSH OPTIFIBRE <br />
+                      Phone: 9928268192 <br />
+                      Email: SENSANETWORKING@GMAIL.COM
+                            </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellPadding="0" cellSpacing="0" border="0" width="100%" style={{ 'marginBottom': '15px' }}>
+              <tbody>
+                <tr>
+                  <td width="50%" style={{ 'paddingLeft': '30px' }}><strong>Receipt No:</strong> {_p.receipt_number}</td>
+                  <td style={{ 'paddingLeft': '30px' }}>
+                    <strong>Receipt Date/Time:</strong> {this.getTime(_p.bill_submission_date)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellPadding="0" cellSpacing="0" border="0" width="100%">
+              <thead>
+                <tr>
+                  <th align="center" style={styles.allBorders}>Sr No.</th>
+                  <th align="center" style={styles.allBordersExceptLeft}>Department/Service</th>
+                  <th align="center" style={styles.allBordersExceptLeft}>Consumer Info</th>
+                  <th align="center" style={styles.allBordersExceptLeft}>Trans ID</th>
+                  <th align="center" style={styles.allBordersExceptLeft}>Mode Ref No</th>
+                  <th align="center" style={styles.allBordersExceptLeft}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="center" style={styles.allBordersExceptTop}>1</td>
+                  <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
+                  <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
+                  <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
+                  <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.payment_mode.toUpperCase()}</td>
+                  <td align="right" style={styles.allBordersExceptTopAndLeft}>
+                    <div style={{ 'paddingRight': '15px' }}>{_p.amount.toFixed(4)}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan="5" style={styles.allBordersExceptTop}><strong style={{ 'paddingLeft': '15px' }}>Grand Total</strong></td>
+                  <td align="right" style={styles.allBordersExceptTopAndLeft}><strong style={{ 'paddingRight': '15px' }}>{_p.amount.toFixed(4)}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style={{ 'marginTop': '8px', 'fontSize': '15px', 'fontStyle': 'italic' }}>
+              Disclaimer: Payment through Cheque or DD are subject to realization.
+                    </div>
+            <div style={{ 'marginTop': '30px' }}>
+              Received Amount Rs. {_p.amount.toFixed(4)} ( Rupees {this.getAmount(_p.amount)} Only )
+                    </div>
+            <div style={{ 'textAlign': 'center', 'fontStyle': 'italic', 'fontSize': '15px', 'marginTop': '40px' }}>
+              (This is a computer generated receipt and requires no signature)
+                    </div>
+          </div> : null
+      }
     </div>;
   }
 }
 const mapStateToProps = (state) => {
   return {
     user: state.user
+  }
+}
+const styles = {
+  'allBorders': {
+    'border': '1px solid black'
+  },
+  'allBordersExceptLeft': {
+    'borderTop': '1px solid black', 'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+  },
+  'allBordersExceptTop': {
+    'borderLeft': '1px solid black', 'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+  },
+  'allBordersExceptTopAndLeft': {
+    'borderRight': '1px solid black', 'borderBottom': '1px solid black'
   }
 }
 export default connect(mapStateToProps)(AddComponent);

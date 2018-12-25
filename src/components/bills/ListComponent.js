@@ -25,6 +25,7 @@ class ListComponent extends React.Component {
   constructor(props) {
     super(props);
     this.searchBill = this.searchBill.bind(this);
+    this.clearSearch = this.clearSearch.bind(this);
     this.state = {
       'search': {
         'k_number': '',
@@ -33,6 +34,7 @@ class ListComponent extends React.Component {
       },
       'bills': [],
       'printData': {},
+      'reportData': {},
       'cols': [
         {
           'Header': 'K Number',
@@ -57,7 +59,10 @@ class ListComponent extends React.Component {
         {
           'Header': 'Actions',
           Cell: row => (
-            <div className='text-center'><button onClick={() => this.printBill(row)}>Print</button></div>
+            <Row>
+              <Col md="6"><Button block size="sm" color="primary" onClick={() => this.printBill(row)}>Print</Button></Col>
+              <Col md="6"><Button block size="sm" color="success" onClick={() => this.printReport(row)}>Report</Button></Col>
+            </Row>
           )
         }
       ]
@@ -83,6 +88,11 @@ class ListComponent extends React.Component {
       methods.print("printContainer");
     });
   }
+  printReport(data) {
+    this.setState({ reportData: data.original }, () => {
+      methods.print("reportContainer");
+    });
+  }
   searchBill(e) {
     e.preventDefault();
     const _s = Object.assign({}, this.state.search);
@@ -95,9 +105,17 @@ class ListComponent extends React.Component {
     if (!_s.endDate) {
       delete _s.endDate;
     }
-    if (Object.keys(_s).length) {
-      this.getBills(_s);
-    }
+    this.getBills(_s);
+  }
+  clearSearch() {
+    const self = this;
+    self.setState({
+      'search': {
+        'k_number': '',
+        'startDate': '',
+        'endDate': ''
+      }
+    }, () => self.getBills());
   }
   componentDidMount() {
     document.title = "Bills";
@@ -132,6 +150,7 @@ class ListComponent extends React.Component {
   }
   render() {
     const _p = this.state.printData;
+    const _r = this.state.reportData;
     return <div className="animated fadeIn">
       <Row>
         <Col>
@@ -155,6 +174,7 @@ class ListComponent extends React.Component {
                       <Label htmlFor="startDate">Date From</Label><br />
                       <DatePicker
                         className='form-control'
+                        placeholderText="Date From"
                         selected={this.state.search.startDate}
                         onChange={date => this.changeInput('startDate', date)}
                       />
@@ -165,6 +185,7 @@ class ListComponent extends React.Component {
                       <Label htmlFor="endDate">Date To</Label><br />
                       <DatePicker
                         className='form-control'
+                        placeholderText="Date To"
                         selected={this.state.search.endDate}
                         onChange={date => this.changeInput('endDate', date)}
                       />
@@ -172,8 +193,9 @@ class ListComponent extends React.Component {
                   </Col>
                   <Col md="3">
                     <br />
-                    <div style={{paddingTop:'6px'}}>
-                    <Button color="primary" className="px-4">Search</Button>
+                    <div style={{ paddingTop: '6px' }}>
+                      <Button color="primary" className="px-4">Search</Button>
+                      <Button color="danger" onClick={this.clearSearch} className="px-4">Clear</Button>
                     </div>
                   </Col>
                 </Row>
@@ -198,7 +220,10 @@ class ListComponent extends React.Component {
                       <tbody>
                         <tr>
                           <td width="50%" style={styles.allBorders}>
-                            <div style={{ 'padding': '15px' }}>Image will be shown here</div>
+                            <div style={{ 'padding': '15px' }}>
+                              {/* <img src="https://lh3.googleusercontent.com/I_c3oulsqXYrcnW1i4XQ6QWVcQcqkWS9DJnddwxAG0ZzLUHvAWeuJJj_IAGDsWqRatYJsGY4_bQFiWeUr3Y7veotewy87RmT-o2ylMA6S0jlOB8cmVCLBQcr8D7IiT_gFItG-RM6X1fDdKv1Snwl30aYfnVFH6niYjYuOAVQlyaeVfM117Uj7gCi9oE0u_juuhC-PCWYDLJxbBAJN21BePPd4uN7117TCs0B4ygExe07cnd-EFUIAVm1Ii_X4CPguy_AgNlPA87smOd6ak79wnJxCibdMx0dRWZDGMMbSZOYHjneLpukMTpTcxgA0D6JKAPlxZDZ3zp8_sr-_2lFd5LXidPkW6Cg6R_8qIdRVGGLBmhFPLvqlw19pi1eluHyCxoVwHBPjHKCi8XJXGl1n7CMGx7Nur96TIlHGd0CqZvMzGaHmhmjUeBlWIcBZ3hdFcOve2oaFZKdOgblYEyP_rvEFwUkqVAwSo7VgQQzMi-m3fzElgeFolufrwkQl94YGA5cNw_aTEVf7rS9i-92_Nnj-R2IjkzmVp93kliBuLHWzlq7H4f_mQnehzvQUKnEvS4Xxc8o4Jr2MphRfSV96G0ZSb9K51nS=w1366-h657" /> */}
+
+                            </div>
                           </td>
                           <td style={styles.allBordersExceptLeft}>
                             <div style={{ 'padding': '15px' }}>
@@ -237,7 +262,7 @@ class ListComponent extends React.Component {
                         <tr>
                           <td align="center" style={styles.allBordersExceptTop}>1</td>
                           <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
-                          <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.consumer.k_number + '/' + _p.consumer.consumer_name}</td>
+                          <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
                           <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
                           <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.payment_mode.toUpperCase()}</td>
                           <td align="right" style={styles.allBordersExceptTopAndLeft}>
@@ -263,6 +288,41 @@ class ListComponent extends React.Component {
                   :
                   null
               }
+              {
+                Object.keys(_r).length > 0 ?
+                  <div id="reportContainer" style={{ 'padding': '50px', 'display': 'none' }}>
+                    <br /><br /><br />
+                    <span style={styles.font18}>Receipt No: {_r.receipt_number}</span><span style={{ 'marginLeft': '150px', ...styles.font18 }}>Date: {this.getTime(_r.bill_submission_date)}</span><br />
+                    ----------------------------------------------------------------------------------------------------------- <br />
+                    <table border="0">
+                      <tbody>
+                        <tr>
+                          <td style={styles.font18}>DeptName/ServiceName/ConsumerKey/ConsumerName</td>
+                          <td style={{ 'paddingLeft': '15px', 'paddingRight': '15px', ...styles.font18 }}>Transaction No</td>
+                          <td style={{ 'paddingLeft': '15px', 'paddingRight': '15px', ...styles.font18 }}>Amount (Rs.)</td>
+                        </tr>
+                        <tr>
+                          <td style={styles.font18}>DISCOM/K No/{_r.consumer.k_number}/{_r.consumer.consumer_name}</td>
+                          <td align="center" style={{ 'paddingLeft': '15px', 'paddingRight': '15px', ...styles.font18 }}>{_r.trans_id}</td>
+                          <td align="right" style={{ 'paddingLeft': '15px', 'paddingRight': '15px', ...styles.font18 }}>{_r.amount.toFixed(1)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    ----------------------------------------------------------------------------------------------------------- <br />
+                    <span style={styles.font18}>
+                      Received Rs. {_r.amount.toFixed(4)}/- (Rupees {this.getAmount(_r.amount)} Only) For Services Listed Above. <br />
+                      Pay Mode/Payment Ref No: {_r.payment_mode.toUpperCase()} <br />
+                      Signature <br />
+                      AKSH OPTIFIBRE LTD (Kiosk Code-Sso Id: K21005887-AKSH.AKSH.2366.JOD) <br />
+                      Contact Number: 9928268192
+                    </span>
+                    <br />
+                    ----------------------------------------------------------------------------------------------------------- <br />
+                    ----------------------------------------------------------------------------------------------------------- <br />
+                  </div>
+                  :
+                  null
+              }
             </CardBody>
           </Card>
         </Col>
@@ -282,6 +342,9 @@ const styles = {
   },
   'allBordersExceptTopAndLeft': {
     'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+  },
+  'font18': {
+    'fontSize': '18px'
   }
 }
 const mapStateToProps = (state) => {
