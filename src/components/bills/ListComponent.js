@@ -353,7 +353,7 @@ const styles = {
     'height': '110px',
     'display': 'list-item',
     'margin': '0 auto',
-    'listStyleImage': 'url(https://www.emitra.co.in/wp-content/uploads/2017/07/emitralogo.png)',
+    'listStyleImage': 'url(https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg)',
     'listStylePosition': 'inside',
   }
 }
