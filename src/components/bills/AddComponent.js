@@ -183,7 +183,10 @@ class AddComponent extends React.Component {
           } else {
             ToastStore.success(res.data.message);
             self.resetForm();
-            self.setState({ 'printData': res.data.data }, () => self.printBill());
+            self.setState({ 'printData': res.data.data });
+            setTimeout(() => {
+              self.printBill()
+            }, 200);
           }
         })
         .catch(err => {
@@ -256,7 +259,7 @@ class AddComponent extends React.Component {
                 </FormGroup> */}
               </CardBody>
               <CardFooter>
-                <Button type="submit" size="sm" color="primary">Submit</Button>
+                <Button type="submit" size="sm" color="primary">Submit</Button>&nbsp;
                 <Button type="button" onClick={this.resetForm} size="sm" color="danger">Reset</Button>
               </CardFooter>
             </Form>
@@ -265,7 +268,7 @@ class AddComponent extends React.Component {
       </Row>
       {
         Object.keys(_p).length > 0 ?
-          <div id="printContainer" style={{ 'padding': '20px', 'display': 'none' }}>
+          <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
             <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
               <h2>
                 Government of Rajasthan
@@ -278,7 +281,7 @@ class AddComponent extends React.Component {
                 <tr>
                   <td width="50%" style={styles.allBorders}>
                     <div style={{ 'padding': '15px' }}>
-                      {/* <img src="https://lh3.googleusercontent.com/I_c3oulsqXYrcnW1i4XQ6QWVcQcqkWS9DJnddwxAG0ZzLUHvAWeuJJj_IAGDsWqRatYJsGY4_bQFiWeUr3Y7veotewy87RmT-o2ylMA6S0jlOB8cmVCLBQcr8D7IiT_gFItG-RM6X1fDdKv1Snwl30aYfnVFH6niYjYuOAVQlyaeVfM117Uj7gCi9oE0u_juuhC-PCWYDLJxbBAJN21BePPd4uN7117TCs0B4ygExe07cnd-EFUIAVm1Ii_X4CPguy_AgNlPA87smOd6ak79wnJxCibdMx0dRWZDGMMbSZOYHjneLpukMTpTcxgA0D6JKAPlxZDZ3zp8_sr-_2lFd5LXidPkW6Cg6R_8qIdRVGGLBmhFPLvqlw19pi1eluHyCxoVwHBPjHKCi8XJXGl1n7CMGx7Nur96TIlHGd0CqZvMzGaHmhmjUeBlWIcBZ3hdFcOve2oaFZKdOgblYEyP_rvEFwUkqVAwSo7VgQQzMi-m3fzElgeFolufrwkQl94YGA5cNw_aTEVf7rS9i-92_Nnj-R2IjkzmVp93kliBuLHWzlq7H4f_mQnehzvQUKnEvS4Xxc8o4Jr2MphRfSV96G0ZSb9K51nS=w1366-h657" /> */}
+                      <div style={styles.print_img}></div>
                     </div>
                   </td>
                   <td style={styles.allBordersExceptLeft}>
@@ -362,6 +365,14 @@ const styles = {
   },
   'allBordersExceptTopAndLeft': {
     'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+  },
+  'print_img': {
+    'width': '298px',
+    'height': '110px',
+    'display': 'list-item',
+    'margin': '0 auto',
+    'listStyleImage': 'url(https://www.emitra.co.in/wp-content/uploads/2017/07/emitralogo.png)',
+    'listStylePosition': 'inside',
   }
 }
 export default connect(mapStateToProps)(AddComponent);

@@ -31,7 +31,7 @@ class ListComponent extends React.Component {
         {
           'Header': 'Actions',
           Cell: row => (
-            <div className='text-center'><button onClick={() => this.navToEditPage(row)}>Edit</button></div>
+            <div className='text-center'><Button size="sm" color="primary" onClick={() => this.navToEditPage(row)}>Edit</Button></div>
           )
         }
       ]
@@ -72,7 +72,7 @@ class ListComponent extends React.Component {
           <Card>
             <CardHeader>
               <strong>Users</strong>
-              <Button size="sm" className="float-right" color="primary" onClick={() => this.props.history.push('/users/add')}>Add User</Button>
+              <Button size="sm" className="float-right" color="success" onClick={() => this.props.history.push('/users/add')}>Add User</Button>
             </CardHeader>
             <CardBody>
               <ToastContainer store={ToastStore} />

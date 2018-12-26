@@ -84,9 +84,12 @@ class ListComponent extends React.Component {
     return t;
   }
   printBill(data) {
-    this.setState({ printData: data.original }, () => {
+    const self = this;
+    self.setState({ printData: data.original });
+    setTimeout(function () {
       methods.print("printContainer");
-    });
+    }, 200);
+
   }
   printReport(data) {
     this.setState({ reportData: data.original }, () => {
@@ -157,7 +160,7 @@ class ListComponent extends React.Component {
           <Card>
             <CardHeader>
               <strong>Bills</strong>
-              <Button size="sm" className="float-right" color="primary" onClick={() => this.props.history.push('/bills/add')}>Add Bill</Button>
+              <Button size="sm" className="float-right" color="success" onClick={() => this.props.history.push('/bills/add')}>Add Bill</Button>
             </CardHeader>
             <CardBody>
               <ToastContainer store={ToastStore} />
@@ -194,8 +197,8 @@ class ListComponent extends React.Component {
                   <Col md="3">
                     <br />
                     <div style={{ paddingTop: '6px' }}>
-                      <Button color="primary" className="px-4">Search</Button>
-                      <Button color="danger" onClick={this.clearSearch} className="px-4">Clear</Button>
+                      <Button color="primary" size="sm" className="px-4">Search</Button>&nbsp;
+                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>
                     </div>
                   </Col>
                 </Row>
@@ -208,7 +211,7 @@ class ListComponent extends React.Component {
               />
               {
                 Object.keys(_p).length > 0 ?
-                  <div id="printContainer" style={{ 'padding': '20px', 'display': 'none' }}>
+                  <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
                     <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
                       <h2>
                         Government of Rajasthan
@@ -221,8 +224,7 @@ class ListComponent extends React.Component {
                         <tr>
                           <td width="50%" style={styles.allBorders}>
                             <div style={{ 'padding': '15px' }}>
-                              {/* <img src="https://lh3.googleusercontent.com/I_c3oulsqXYrcnW1i4XQ6QWVcQcqkWS9DJnddwxAG0ZzLUHvAWeuJJj_IAGDsWqRatYJsGY4_bQFiWeUr3Y7veotewy87RmT-o2ylMA6S0jlOB8cmVCLBQcr8D7IiT_gFItG-RM6X1fDdKv1Snwl30aYfnVFH6niYjYuOAVQlyaeVfM117Uj7gCi9oE0u_juuhC-PCWYDLJxbBAJN21BePPd4uN7117TCs0B4ygExe07cnd-EFUIAVm1Ii_X4CPguy_AgNlPA87smOd6ak79wnJxCibdMx0dRWZDGMMbSZOYHjneLpukMTpTcxgA0D6JKAPlxZDZ3zp8_sr-_2lFd5LXidPkW6Cg6R_8qIdRVGGLBmhFPLvqlw19pi1eluHyCxoVwHBPjHKCi8XJXGl1n7CMGx7Nur96TIlHGd0CqZvMzGaHmhmjUeBlWIcBZ3hdFcOve2oaFZKdOgblYEyP_rvEFwUkqVAwSo7VgQQzMi-m3fzElgeFolufrwkQl94YGA5cNw_aTEVf7rS9i-92_Nnj-R2IjkzmVp93kliBuLHWzlq7H4f_mQnehzvQUKnEvS4Xxc8o4Jr2MphRfSV96G0ZSb9K51nS=w1366-h657" /> */}
-
+                              <div style={styles.print_img}></div>
                             </div>
                           </td>
                           <td style={styles.allBordersExceptLeft}>
@@ -345,6 +347,14 @@ const styles = {
   },
   'font18': {
     'fontSize': '18px'
+  },
+  'print_img': {
+    'width': '298px',
+    'height': '110px',
+    'display': 'list-item',
+    'margin': '0 auto',
+    'listStyleImage': 'url(https://www.emitra.co.in/wp-content/uploads/2017/07/emitralogo.png)',
+    'listStylePosition': 'inside',
   }
 }
 const mapStateToProps = (state) => {
