@@ -24,7 +24,8 @@ class EditUserComponent extends React.Component {
       'fields': {
         'name': '',
         'email': '',
-        'password': ''
+        'password': '',
+        'status': true
       },
       'errors': {}
     };
@@ -57,7 +58,7 @@ class EditUserComponent extends React.Component {
           'fields': {
             'name': user.name,
             'email': user.email,
-            'password': user.password
+            'status': user.status
           }
         });
       })
@@ -67,6 +68,9 @@ class EditUserComponent extends React.Component {
       });
   }
   changeInput(field, value) {
+    if(field==='status') {
+      value = value==='true';
+    }
     const state = Object.assign({}, this.state);
     state['fields'][field] = value;
     this.setState(state);
@@ -77,8 +81,8 @@ class EditUserComponent extends React.Component {
     formIsValid = this._validateField('required', 'name', formIsValid);
     formIsValid = this._validateField('required', 'email', formIsValid);
     formIsValid = this._validateField('email', 'email', formIsValid);
-    formIsValid = this._validateField('required', 'password', formIsValid);
-    formIsValid = this._validateField('required', 'status', formIsValid);
+    // formIsValid = this._validateField('required', 'password', formIsValid);
+    // formIsValid = this._validateField('required', 'status', formIsValid);
     this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
@@ -123,9 +127,9 @@ class EditUserComponent extends React.Component {
     const self = this;
     self.validateForm(function () {
       const fields = self.state.fields;
-      fields.added_by = self.props.user._id;
+      fields.uid = self.props.match.params.id;
       axios.post(
-        config.apiUrl + 'users/add',
+        config.apiUrl + 'users/edit',
         fields,
         {
           'headers': {
@@ -179,11 +183,11 @@ class EditUserComponent extends React.Component {
                   </Col>
                   <Col md="10">
                     <FormGroup check inline className="radio">
-                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status1" name="status" value="true" />
+                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status1" name="status" checked={_f.status===true} value={true} />
                       <Label check className="form-check-label" htmlFor="status1">Active</Label>
                     </FormGroup>
                     <FormGroup check inline className="radio">
-                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status2" name="status" value="false" />
+                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status2" name="status" checked={_f.status===false} value={false} />
                       <Label check className="form-check-label" htmlFor="status2">Inactive</Label>
                     </FormGroup>
                     <span className="form-err">{this.state.errors["status"]}</span>
@@ -191,7 +195,7 @@ class EditUserComponent extends React.Component {
                 </FormGroup>
               </CardBody>
               <CardFooter>
-                <Button type="submit" size="sm" color="primary">Submit</Button>
+                <Button type="submit" size="sm" color="primary">Submit</Button>&nbsp;
                 <Button type="reset" size="sm" color="danger">Reset</Button>
               </CardFooter>
             </Form>

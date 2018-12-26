@@ -38,7 +38,6 @@ class ListComponent extends React.Component {
     };
   }
   navToEditPage(data) {
-    return alert('Under construction');
     this.props.history.push('/users/edit/' + data.original._id);
   }
   showLoader(show = true) {
