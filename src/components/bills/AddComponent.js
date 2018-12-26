@@ -177,16 +177,17 @@ class AddComponent extends React.Component {
         }
       )
         .then(res => {
-          self.showLoader(false);
           if (res.data.is_err) {
+            self.showLoader(false);
             ToastStore.error(res.data.message);
           } else {
             ToastStore.success(res.data.message);
             self.resetForm();
             self.setState({ 'printData': res.data.data });
             setTimeout(() => {
+              self.showLoader(false);
               self.printBill()
-            }, 200);
+            }, 1500);
           }
         })
         .catch(err => {

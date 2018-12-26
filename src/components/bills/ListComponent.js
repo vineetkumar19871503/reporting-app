@@ -86,9 +86,11 @@ class ListComponent extends React.Component {
   printBill(data) {
     const self = this;
     self.setState({ printData: data.original });
+    self.showLoader();
     setTimeout(function () {
+      self.showLoader(false);
       methods.print("printContainer");
-    }, 200);
+    }, 1500);
 
   }
   printReport(data) {

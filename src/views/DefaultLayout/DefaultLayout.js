@@ -31,23 +31,23 @@ class DefaultLayout extends Component {
   constructor(props) {
     super(props);
     if (this.props.user.type === 'admin') {
-      navigation.items.push({
-        name: 'Users',
-        url: '/users',
-        icon: 'icon-user',
-        children: [
-          {
-            name: 'Add User',
-            url: '/users/add',
-            icon: 'icon-plus',
-          },
-          {
-            name: 'Users List',
-            url: '/users/list',
-            icon: 'icon-list',
-          }
-        ]
-      });
+      // navigation.items.push({
+      //   name: 'Users',
+      //   url: '/users',
+      //   icon: 'icon-user',
+      //   children: [
+      //     {
+      //       name: 'Add User',
+      //       url: '/users/add',
+      //       icon: 'icon-plus',
+      //     },
+      //     {
+      //       name: 'Users List',
+      //       url: '/users/list',
+      //       icon: 'icon-list',
+      //     }
+      //   ]
+      // });
     }
     this.state = { 'navItems': navigation };
   }
