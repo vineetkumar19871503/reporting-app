@@ -270,81 +270,85 @@ class AddComponent extends React.Component {
       {
         Object.keys(_p).length > 0 ?
           <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
-            <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
-              <h2>
-                Government of Rajasthan
-                        <br />
-                District e-Governance Society (Jodhpur)
-                      </h2>
+            <div style={{ 'zoom': '55%', 'float': 'left' }}>
+              <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
+                <h3 style={font}>
+                  Government of Rajasthan
+                          <br />
+                  District e-Governance Society (Jodhpur)
+                        </h3>
+              </div>
+              <table border="0" cellPadding="0" cellSpacing="0" width="100%" style={{ 'marginBottom': '15px' }}>
+                <tbody>
+                  <tr>
+                    <td width="50%" style={styles.allBorders}>
+                      <div style={{ 'padding': '15px' }}>
+                        <div style={styles.print_img}></div>
+                      </div>
+                    </td>
+                    <td style={styles.allBordersExceptLeft}>
+                      <div style={{ 'padding': '15px', ...font }}>
+                        Code: K21005887 [ AKSH.AKSH.2366.JOD ] <br />
+                        Kiosk: AKSH OPTIFIBRE LTD <br />
+                        LSP: AKSH OPTIFIBRE <br />
+                        Phone: 9928268192 <br />
+                        Email: SENSANETWORKING@GMAIL.COM
+                              </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <table cellPadding="0" cellSpacing="0" border="0" width="100%" style={{ 'marginBottom': '15px' }}>
+                <tbody>
+                  <tr>
+                    <td width="50%" style={{ 'paddingLeft': '30px', ...font }}><strong style={font}>Receipt No:</strong> {_p.receipt_number}</td>
+                    <td style={{ 'paddingLeft': '30px', ...font }}>
+                      <strong style={font}>Receipt Date/Time:</strong> {this.getTime(_p.bill_submission_date)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <table cellPadding="0" cellSpacing="0" border="0" width="100%">
+                <thead>
+                  <tr>
+                    <th align="center" style={styles.allBorders}>Sr No.</th>
+                    <th align="center" style={styles.allBordersExceptLeft}>Department/Service</th>
+                    <th align="center" style={styles.allBordersExceptLeft}>Consumer Info</th>
+                    <th align="center" style={styles.allBordersExceptLeft}>Trans ID</th>
+                    <th align="center" style={styles.allBordersExceptLeft}>Mode Ref No</th>
+                    <th align="center" style={styles.allBordersExceptLeft}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td align="center" style={styles.allBordersExceptTop}>1</td>
+                    <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
+                    <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
+                    <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
+                    <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.payment_mode + '/' + _p.payment_mode).toUpperCase()}</td>
+                    <td align="right" style={styles.allBordersExceptTopAndLeft}>
+                      <div style={{ 'paddingRight': '15px', ...font }}>{_p.amount.toFixed(4)}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="5" style={styles.allBordersExceptTop}><strong style={{ 'paddingLeft': '15px', ...font }}>Grand Total</strong></td>
+                    <td align="right" style={styles.allBordersExceptTopAndLeft}><strong style={{ 'paddingRight': '15px', ...font }}>{_p.amount.toFixed(4)}</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ 'marginTop': '8px', 'fontSize': '15px', 'fontStyle': 'italic', ...font }}>
+                Disclaimer: Payment through Cheque or DD are subject to realization.
+                      </div>
+              <div style={{ 'marginTop': '30px', ...font }}>
+                Received Amount Rs. {_p.amount.toFixed(4)} ( Rupees {this.getAmount(_p.amount)} Only )
+                      </div>
+              <div style={{ 'textAlign': 'center', 'fontStyle': 'italic', 'fontSize': '15px', 'marginTop': '40px', ...font }}>
+                (This is a computer generated receipt and requires no signature)
+                      </div>
             </div>
-            <table border="0" cellPadding="0" cellSpacing="0" width="100%" style={{ 'marginBottom': '15px' }}>
-              <tbody>
-                <tr>
-                  <td width="50%" style={styles.allBorders}>
-                    <div style={{ 'padding': '15px' }}>
-                      <div style={styles.print_img}></div>
-                    </div>
-                  </td>
-                  <td style={styles.allBordersExceptLeft}>
-                    <div style={{ 'padding': '15px' }}>
-                      Code: K21005887 [ AKSH.AKSH.2366.JOD ] <br />
-                      Kiosk: AKSH OPTIFIBRE LTD <br />
-                      LSP: AKSH OPTIFIBRE <br />
-                      Phone: 9928268192 <br />
-                      Email: SENSANETWORKING@GMAIL.COM
-                            </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table cellPadding="0" cellSpacing="0" border="0" width="100%" style={{ 'marginBottom': '15px' }}>
-              <tbody>
-                <tr>
-                  <td width="50%" style={{ 'paddingLeft': '30px' }}><strong>Receipt No:</strong> {_p.receipt_number}</td>
-                  <td style={{ 'paddingLeft': '30px' }}>
-                    <strong>Receipt Date/Time:</strong> {this.getTime(_p.bill_submission_date)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table cellPadding="0" cellSpacing="0" border="0" width="100%">
-              <thead>
-                <tr>
-                  <th align="center" style={styles.allBorders}>Sr No.</th>
-                  <th align="center" style={styles.allBordersExceptLeft}>Department/Service</th>
-                  <th align="center" style={styles.allBordersExceptLeft}>Consumer Info</th>
-                  <th align="center" style={styles.allBordersExceptLeft}>Trans ID</th>
-                  <th align="center" style={styles.allBordersExceptLeft}>Mode Ref No</th>
-                  <th align="center" style={styles.allBordersExceptLeft}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td align="center" style={styles.allBordersExceptTop}>1</td>
-                  <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
-                  <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
-                  <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
-                  <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.payment_mode.toUpperCase()}</td>
-                  <td align="right" style={styles.allBordersExceptTopAndLeft}>
-                    <div style={{ 'paddingRight': '15px' }}>{_p.amount.toFixed(4)}</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan="5" style={styles.allBordersExceptTop}><strong style={{ 'paddingLeft': '15px' }}>Grand Total</strong></td>
-                  <td align="right" style={styles.allBordersExceptTopAndLeft}><strong style={{ 'paddingRight': '15px' }}>{_p.amount.toFixed(4)}</strong></td>
-                </tr>
-              </tbody>
-            </table>
-            <div style={{ 'marginTop': '8px', 'fontSize': '15px', 'fontStyle': 'italic' }}>
-              Disclaimer: Payment through Cheque or DD are subject to realization.
-                    </div>
-            <div style={{ 'marginTop': '30px' }}>
-              Received Amount Rs. {_p.amount.toFixed(4)} ( Rupees {this.getAmount(_p.amount)} Only )
-                    </div>
-            <div style={{ 'textAlign': 'center', 'fontStyle': 'italic', 'fontSize': '15px', 'marginTop': '40px' }}>
-              (This is a computer generated receipt and requires no signature)
-                    </div>
-          </div> : null
+          </div>
+          :
+          null
       }
     </div>;
   }
@@ -354,18 +358,33 @@ const mapStateToProps = (state) => {
     user: state.user
   }
 }
+const font = {
+  'fontFamily':'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
+};
 const styles = {
   'allBorders': {
-    'border': '1px solid black'
+    'border': '1px solid black',
+    'paddingLeft': '5px',
+    'paddingRight': '5px',
+    ...font
   },
   'allBordersExceptLeft': {
-    'borderTop': '1px solid black', 'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+    'borderTop': '1px solid black', 'borderRight': '1px solid black', 'borderBottom': '1px solid black',
+    'paddingLeft': '5px',
+    'paddingRight': '5px',
+    ...font
   },
   'allBordersExceptTop': {
-    'borderLeft': '1px solid black', 'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+    'borderLeft': '1px solid black', 'borderRight': '1px solid black', 'borderBottom': '1px solid black',
+    'paddingLeft': '5px',
+    'paddingRight': '5px',
+    ...font
   },
   'allBordersExceptTopAndLeft': {
-    'borderRight': '1px solid black', 'borderBottom': '1px solid black'
+    'borderRight': '1px solid black', 'borderBottom': '1px solid black',
+    'paddingLeft': '5px',
+    'paddingRight': '5px',
+    ...font
   },
   'print_img': {
     'width': '298px',
@@ -373,7 +392,7 @@ const styles = {
     'display': 'list-item',
     'margin': '0 auto',
     'listStyleImage': 'url(https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg)',
-    'listStylePosition': 'inside',
+    'listStylePosition': 'inside'
   }
 }
 export default connect(mapStateToProps)(AddComponent);

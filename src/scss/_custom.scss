@@ -1,4 +1,9 @@
 // Here you can add other styles
+@media print {
+    * {
+        font-family: 'Verdana';
+    }
+}
 .form-err {
     width: 100%;
     color:#f00 !important;

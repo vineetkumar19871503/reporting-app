@@ -66,7 +66,7 @@ class DefaultLayout extends Component {
     } else {
       const self = this;
       axios.get(config.apiUrl + 'users/checkSession', {
-        headers: { 'Authorization': 'Bearer ' + user }
+        headers: { 'Authorization': 'Bearer ' + user.token }
       })
         .then(res => {
         })
