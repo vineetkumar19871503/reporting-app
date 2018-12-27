@@ -323,7 +323,7 @@ class AddComponent extends React.Component {
                   <tr>
                     <td align="center" style={styles.allBordersExceptTop}>1</td>
                     <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
-                    <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
+                    <td align="center" style={{'width': '130px', 'wordWrap':'break-word', ...styles.allBordersExceptTopAndLeft}}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
                     <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
                     <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.payment_mode + '/' + _p.payment_mode).toUpperCase()}</td>
                     <td align="right" style={styles.allBordersExceptTopAndLeft}>
