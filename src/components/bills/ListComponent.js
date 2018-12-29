@@ -87,11 +87,7 @@ class ListComponent extends React.Component {
     const self = this;
     self.setState({ printData: data.original });
     self.showLoader();
-    setTimeout(function () {
-      self.showLoader(false);
-      methods.print("printContainer");
-    }, 1500);
-
+    self.loadDummyImg();
   }
   printReport(data) {
     this.setState({ reportData: data.original }, () => {
@@ -123,8 +119,16 @@ class ListComponent extends React.Component {
     }, () => self.getBills());
   }
   componentDidMount() {
+    const self = this;
     document.title = "Bills";
     this.getBills();
+    document.getElementById('dummyImg').addEventListener('load', function () {
+      self.showLoader(false);
+      methods.print("printContainer");
+    });
+  }
+  loadDummyImg() {
+    document.getElementById('dummyImg').setAttribute('src', 'https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg');
   }
   getAmount(amt) {
     amt = Math.round(amt);
@@ -157,6 +161,7 @@ class ListComponent extends React.Component {
     const _p = this.state.printData;
     const _r = this.state.reportData;
     return <div className="animated fadeIn">
+      <img id="dummyImg" style={{ 'display': 'none' }} />
       <Row>
         <Col>
           <Card>
@@ -214,7 +219,7 @@ class ListComponent extends React.Component {
               {
                 Object.keys(_p).length > 0 ?
                   <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
-                    <div style={{'zoom': '55%', 'float':'left'}}>
+                    <div style={{ 'zoom': '55%', 'float': 'left' }}>
                       <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
                         <h3 style={font}>
                           Government of Rajasthan
@@ -255,21 +260,25 @@ class ListComponent extends React.Component {
                       <table cellPadding="0" cellSpacing="0" border="0" width="100%">
                         <thead>
                           <tr>
-                            <th align="center" style={styles.allBorders}>Sr No.</th>
-                            <th align="center" style={styles.allBordersExceptLeft}>Department/Service</th>
-                            <th align="center" style={styles.allBordersExceptLeft}>Consumer Info</th>
-                            <th align="center" style={styles.allBordersExceptLeft}>Trans ID</th>
-                            <th align="center" style={styles.allBordersExceptLeft}>Mode Ref No</th>
-                            <th align="center" style={styles.allBordersExceptLeft}>Amount</th>
+                            <th align="left" style={styles.allBorders}>Sr <br /> No.</th>
+                            <th align="left" style={styles.allBordersExceptLeft}>Department/Service</th>
+                            <th align="left" style={styles.allBordersExceptLeft}>Consumer Info</th>
+                            <th align="left" style={styles.allBordersExceptLeft}>Trans ID</th>
+                            <th align="left" style={styles.allBordersExceptLeft}>Mode Ref <br /> No</th>
+                            <th align="right" style={styles.allBordersExceptLeft}>Amount</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
-                            <td align="center" style={styles.allBordersExceptTop}>1</td>
-                            <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
-                            <td align="center" style={{'width': '130px', 'wordWrap':'break-word', ...styles.allBordersExceptTopAndLeft}}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
-                            <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
-                            <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.payment_mode+'/'+_p.payment_mode).toUpperCase()}</td>
+                            <td style={styles.allBordersExceptTop}>1</td>
+                            <td style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
+                            <td style={styles.allBordersExceptTopAndLeft}>
+                              <div style={{ 'width': '114px', 'wordWrap': 'break-word' }}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</div>
+                            </td>
+                            <td style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
+                            <td style={styles.allBordersExceptTopAndLeft}>
+                              <div style={{ 'width': '75px', 'wordWrap': 'break-word' }}>{(_p.payment_mode + '/' + _p.payment_mode).toUpperCase()}</div>
+                            </td>
                             <td align="right" style={styles.allBordersExceptTopAndLeft}>
                               <div style={{ 'paddingRight': '15px', ...font }}>{_p.amount.toFixed(4)}</div>
                             </td>
@@ -317,7 +326,7 @@ class ListComponent extends React.Component {
                     ----------------------------------------------------------------------------------------------------------- <br />
                     <span style={styles.font18}>
                       Received Rs. {_r.amount.toFixed(4)}/- (Rupees {this.getAmount(_r.amount)} Only) For Services Listed Above. <br />
-                      Pay Mode/Payment Ref No: {(_r.payment_mode+'/'+_r.payment_mode).toUpperCase()} <br />
+                      Pay Mode/Payment Ref No: {(_r.payment_mode + '/' + _r.payment_mode).toUpperCase()} <br />
                       Signature <br />
                       AKSH OPTIFIBRE LTD (Kiosk Code-Sso Id: K21005887-AKSH.AKSH.2366.JOD) <br />
                       Contact Number: 9928268192
@@ -337,7 +346,7 @@ class ListComponent extends React.Component {
   }
 }
 const font = {
-  'fontFamily':'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
+  'fontFamily': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
 };
 const styles = {
   'allBorders': {
@@ -366,7 +375,7 @@ const styles = {
   },
   'font18': {
     'fontSize': '14px',
-    'fontFamily':'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
+    'fontFamily': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
   },
   'print_img': {
     'width': '298px',

@@ -38,8 +38,13 @@ class AddComponent extends React.Component {
     this.resetForm = this.resetForm.bind(this);
   }
   componentDidMount() {
+    const self = this;
     document.title = "Add New Bill";
-    this.getConsumers();
+    self.getConsumers();
+    document.getElementById('dummyImg').addEventListener('load', function () {
+      self.showLoader(false);
+      methods.print("printContainer");
+    });
   }
   changeInput(field, value) {
     const state = Object.assign({}, this.state);
@@ -153,8 +158,11 @@ class AddComponent extends React.Component {
     }
     return t;
   }
+  loadDummyImg() {
+    document.getElementById('dummyImg').setAttribute('src', 'https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg');
+  }
   printBill() {
-    methods.print("printContainer");
+    this.loadDummyImg();
   }
   getAmount(amt) {
     amt = Math.round(amt);
@@ -184,10 +192,7 @@ class AddComponent extends React.Component {
             ToastStore.success(res.data.message);
             self.resetForm();
             self.setState({ 'printData': res.data.data });
-            setTimeout(() => {
-              self.showLoader(false);
-              self.printBill()
-            }, 1500);
+            self.printBill();
           }
         })
         .catch(err => {
@@ -199,6 +204,7 @@ class AddComponent extends React.Component {
   render() {
     const _p = this.state.printData;
     return <div className="animated fadeIn">
+      <img id="dummyImg" style={{ 'display': 'none' }} />
       <Row>
         <Col>
           <Card>
@@ -274,9 +280,9 @@ class AddComponent extends React.Component {
               <div style={{ 'marginTop': '40px', 'width': '100%', 'textAlign': 'center', 'borderBottom': '1px solid black', 'marginBottom': '15px' }}>
                 <h3 style={font}>
                   Government of Rajasthan
-                          <br />
+                  <br />
                   District e-Governance Society (Jodhpur)
-                        </h3>
+                </h3>
               </div>
               <table border="0" cellPadding="0" cellSpacing="0" width="100%" style={{ 'marginBottom': '15px' }}>
                 <tbody>
@@ -293,7 +299,7 @@ class AddComponent extends React.Component {
                         LSP: AKSH OPTIFIBRE <br />
                         Phone: 9928268192 <br />
                         Email: SENSANETWORKING@GMAIL.COM
-                              </div>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -311,21 +317,25 @@ class AddComponent extends React.Component {
               <table cellPadding="0" cellSpacing="0" border="0" width="100%">
                 <thead>
                   <tr>
-                    <th align="center" style={styles.allBorders}>Sr No.</th>
-                    <th align="center" style={styles.allBordersExceptLeft}>Department/Service</th>
-                    <th align="center" style={styles.allBordersExceptLeft}>Consumer Info</th>
-                    <th align="center" style={styles.allBordersExceptLeft}>Trans ID</th>
-                    <th align="center" style={styles.allBordersExceptLeft}>Mode Ref No</th>
-                    <th align="center" style={styles.allBordersExceptLeft}>Amount</th>
+                    <th align="left" style={styles.allBorders}>Sr <br /> No.</th>
+                    <th align="left" style={styles.allBordersExceptLeft}>Department/Service</th>
+                    <th align="left" style={styles.allBordersExceptLeft}>Consumer Info</th>
+                    <th align="left" style={styles.allBordersExceptLeft}>Trans ID</th>
+                    <th align="left" style={styles.allBordersExceptLeft}>Mode Ref <br /> No</th>
+                    <th align="right" style={styles.allBordersExceptLeft}>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td align="center" style={styles.allBordersExceptTop}>1</td>
-                    <td align="center" style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
-                    <td align="center" style={{'width': '130px', 'wordWrap':'break-word', ...styles.allBordersExceptTopAndLeft}}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</td>
-                    <td align="center" style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
-                    <td align="center" style={styles.allBordersExceptTopAndLeft}>{(_p.payment_mode + '/' + _p.payment_mode).toUpperCase()}</td>
+                    <td style={styles.allBordersExceptTop}>1</td>
+                    <td style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
+                    <td style={styles.allBordersExceptTopAndLeft}>
+                      <div style={{ 'width': '114px', 'wordWrap': 'break-word' }}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</div>
+                    </td>
+                    <td style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
+                    <td style={styles.allBordersExceptTopAndLeft}>
+                      <div style={{ 'width': '75px', 'wordWrap': 'break-word' }}>{(_p.payment_mode + '/' + _p.payment_mode).toUpperCase()}</div>
+                    </td>
                     <td align="right" style={styles.allBordersExceptTopAndLeft}>
                       <div style={{ 'paddingRight': '15px', ...font }}>{_p.amount.toFixed(4)}</div>
                     </td>
@@ -338,13 +348,13 @@ class AddComponent extends React.Component {
               </table>
               <div style={{ 'marginTop': '8px', 'fontSize': '15px', 'fontStyle': 'italic', ...font }}>
                 Disclaimer: Payment through Cheque or DD are subject to realization.
-                      </div>
+              </div>
               <div style={{ 'marginTop': '30px', ...font }}>
                 Received Amount Rs. {_p.amount.toFixed(4)} ( Rupees {this.getAmount(_p.amount)} Only )
-                      </div>
+              </div>
               <div style={{ 'textAlign': 'center', 'fontStyle': 'italic', 'fontSize': '15px', 'marginTop': '40px', ...font }}>
                 (This is a computer generated receipt and requires no signature)
-                      </div>
+              </div>
             </div>
           </div>
           :
@@ -359,7 +369,7 @@ const mapStateToProps = (state) => {
   }
 }
 const font = {
-  'fontFamily':'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
+  'fontFamily': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'
 };
 const styles = {
   'allBorders': {
