@@ -26,6 +26,36 @@ export default {
         }
       ]
     },
+    {
+      name: 'BSNL Cable',
+      url: '/bsnl-cable',
+      icon: 'icon-plus'
+    },
+    {
+      name: 'Discom Pole',
+      url: '/discom-pole',
+      icon: 'icon-plus'
+    },
+    {
+      name: 'Discom',
+      url: '/discom',
+      icon: 'icon-plus'
+    },
+    {
+      name: 'High Court',
+      url: '/high-court',
+      icon: 'icon-plus'
+    },
+    {
+      name: 'Machiya',
+      url: '/machiya',
+      icon: 'icon-plus'
+    },
+    {
+      name: 'Yavukush',
+      url: '/yavukush',
+      icon: 'icon-plus'
+    },
     // {
     //   name: 'Users',
     //   url: '/users',
