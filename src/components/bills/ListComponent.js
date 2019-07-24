@@ -75,7 +75,11 @@ class ListComponent extends React.Component {
   }
   getTime(date) {
     date = new Date(date);
-    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' ' + this.addZeroToTime(date.getHours()) + ':' + this.addZeroToTime(date.getMinutes()) + ':' + this.addZeroToTime(date.getSeconds())
+    var dt = date.getDate().toString();
+    var mn = (date.getMonth() + 1).toString();
+    dt = dt.length === 1 ? "0" + dt : dt;
+    mn = mn.length === 1 ? "0" + mn : mn;
+    return dt + '/' + mn + '/' + date.getFullYear() + ' ' + this.addZeroToTime(date.getHours()) + ':' + this.addZeroToTime(date.getMinutes()) + ':' + this.addZeroToTime(date.getSeconds())
   }
   addZeroToTime(t) {
     if (t < 10) {
@@ -161,7 +165,7 @@ class ListComponent extends React.Component {
     const _p = this.state.printData;
     const _r = this.state.reportData;
     return <div className="animated fadeIn">
-      <img id="dummyImg" style={{ 'display': 'none' }} />
+      <img alt="dummy-img" id="dummyImg" style={{ 'display': 'none' }} />
       <Row>
         <Col>
           <Card>
@@ -273,7 +277,7 @@ class ListComponent extends React.Component {
                             <td style={styles.allBordersExceptTop}>1</td>
                             <td style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
                             <td style={styles.allBordersExceptTopAndLeft}>
-                              <div style={{ 'width': '114px', 'wordWrap': 'break-word' }}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</div>
+                              <div style={{ 'width': '122px', 'wordWrap': 'break-word' }}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</div>
                             </td>
                             <td style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
                             <td style={styles.allBordersExceptTopAndLeft}>

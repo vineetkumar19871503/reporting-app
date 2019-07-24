@@ -94,9 +94,9 @@ class AddComponent extends React.Component {
     formIsValid = this._validateField('number', 'amount', formIsValid);
     if (!this.errors['k_number']) {
       const kNum = this.state.fields.k_number.trim();
-      if (kNum.length !== 11) {
+      if (kNum.length !== 12) {
         formIsValid = false;
-        this.errors.k_number = "The length of K Number should be 11";
+        this.errors.k_number = "The length of K Number should be 12";
       }
     }
     // formIsValid = this._validateField('required', 'payment_mode', formIsValid);
@@ -150,7 +150,11 @@ class AddComponent extends React.Component {
   }
   getTime(date) {
     date = new Date(date);
-    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' ' + this.addZeroToTime(date.getHours()) + ':' + this.addZeroToTime(date.getMinutes()) + ':' + this.addZeroToTime(date.getSeconds())
+    var dt = date.getDate().toString();
+    var mn = (date.getMonth() + 1).toString();
+    dt = dt.length === 1 ? "0" + dt : dt;
+    mn = mn.length === 1 ? "0" + mn : mn;
+    return dt + '/' + mn + '/' + date.getFullYear() + ' ' + this.addZeroToTime(date.getHours()) + ':' + this.addZeroToTime(date.getMinutes()) + ':' + this.addZeroToTime(date.getSeconds())
   }
   addZeroToTime(t) {
     if (t < 10) {
@@ -204,7 +208,7 @@ class AddComponent extends React.Component {
   render() {
     const _p = this.state.printData;
     return <div className="animated fadeIn">
-      <img id="dummyImg" style={{ 'display': 'none' }} />
+      <img alt="dummy-img" id="dummyImg" style={{ 'display': 'none' }} />
       <Row>
         <Col>
           <Card>
@@ -219,7 +223,7 @@ class AddComponent extends React.Component {
                   <div className="custom-form-field">
                     <ReactAutocomplete
                       items={this.state.consumers}
-                      inputProps={{ placeholder: 'Enter K Number', maxLength: "11" }}
+                      inputProps={{ placeholder: 'Enter K Number', maxLength: "12" }}
                       shouldItemRender={(item, value) => this.state.shouldOpenAc && item.k_number.toLowerCase().indexOf(value.toLowerCase()) > -1}
                       getItemValue={item => item.k_number}
                       renderItem={(item, highlighted) =>
@@ -330,7 +334,7 @@ class AddComponent extends React.Component {
                     <td style={styles.allBordersExceptTop}>1</td>
                     <td style={styles.allBordersExceptTopAndLeft}>DISCOM/K No</td>
                     <td style={styles.allBordersExceptTopAndLeft}>
-                      <div style={{ 'width': '114px', 'wordWrap': 'break-word' }}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</div>
+                      <div style={{ 'width': '122px', 'wordWrap': 'break-word' }}>{(_p.consumer.k_number + '/' + _p.consumer.consumer_name).toUpperCase()}</div>
                     </td>
                     <td style={styles.allBordersExceptTopAndLeft}>{_p.trans_id}</td>
                     <td style={styles.allBordersExceptTopAndLeft}>

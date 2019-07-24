@@ -9,7 +9,7 @@ import config from '../../../config.js';
 class Login extends Component {
   constructor(props) {
     super(props);
-    this.state = { 'fields': { 'email': 'admin@admin.com', 'password': 'abc@123' }, 'errors': {} };
+    this.state = { 'fields': { 'email': '', 'password': '' }, 'errors': {} };
     this.login = this.login.bind(this);
   }
   componentWillMount() {
