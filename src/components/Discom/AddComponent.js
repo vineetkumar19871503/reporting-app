@@ -22,13 +22,14 @@ class AddComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      'today_date': moment().format('DD/MM/YYYY'),
       'records': [],
       'fields': {
-        'number_of_poles': '',
-        'address': '',
-        'an_jn_office': '',
-        'staywire': ''
+        'date': moment().format('DD/MM/YYYY'),
+        'amount': '',
+        'bulb_type': '',
+        'sell_status': 'return',
+        'quantity': '',
+        'card_type': 'Debit'
       },
       'errors': {}
     };
@@ -37,7 +38,7 @@ class AddComponent extends React.Component {
   }
   componentDidMount() {
     const self = this;
-    document.title = "Discom";
+    document.title = "Discom - Add";
     self.getRecords();
   }
   changeInput(field, value) {
@@ -48,10 +49,12 @@ class AddComponent extends React.Component {
   resetForm() {
     this.setState({
       'fields': {
-        'number_of_poles': '',
-        'address': '',
-        'an_jn_office': '',
-        'staywire': ''
+        'date': moment().format('DD/MM/YYYY'),
+        'amount': '',
+        'bulb_type': '',
+        'sell_status': 'return',
+        'quantity': '',
+        'card_type': 'Debit'
       }
     });
   }
@@ -82,11 +85,12 @@ class AddComponent extends React.Component {
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
-    formIsValid = this._validateField('required', 'number_of_poles', formIsValid);
-    formIsValid = this._validateField('number', 'number_of_poles', formIsValid);
-    formIsValid = this._validateField('required', 'address', formIsValid);
-    formIsValid = this._validateField('required', 'an_jn_office', formIsValid);
-    formIsValid = this._validateField('required', 'staywire', formIsValid);
+    formIsValid = this._validateField('required', 'amount', formIsValid);
+    formIsValid = this._validateField('required', 'bulb_type', formIsValid);
+    formIsValid = this._validateField('required', 'sell_status', formIsValid);
+    formIsValid = this._validateField('required', 'quantity', formIsValid);
+    formIsValid = this._validateField('number', 'quantity', formIsValid);
+    formIsValid = this._validateField('required', 'card_type', formIsValid);
     this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
@@ -124,6 +128,7 @@ class AddComponent extends React.Component {
     self.validateForm(function () {
       self.showLoader();
       const fields = self.state.fields;
+      fields.date = moment().format('MM/DD/YYYY');
       console.log(fields);
       return;
       axios.post(
@@ -162,30 +167,41 @@ class AddComponent extends React.Component {
             <Form onSubmit={this.saveFormData}>
               <CardBody>
                 <FormGroup>
-                  <Label htmlFor="today_date">Date</Label><br />
+                  <Label htmlFor="date">Date</Label><br />
                   <div className="custom-form-field">
-                    <Input readOnly="readonly" type="text" id="today_date" value={this.state.today_date} />
+                    <Input readOnly="readonly" type="text" id="date" value={this.state.fields.date} />
                   </div>
                 </FormGroup>
                 <FormGroup>
-                  <Label htmlFor="number_of_poles">No. Of Pole</Label>
-                  <Input type="text" id="number_of_poles" value={this.state.fields.number_of_poles} onChange={e => this.changeInput('number_of_poles', e.target.value)} placeholder="Enter No. Of Poles" />
-                  <span className="form-err">{this.state.errors["number_of_poles"]}</span>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input type="text" id="amount" value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
+                  <span className="form-err">{this.state.errors["amount"]}</span>
                 </FormGroup>
                 <FormGroup>
-                  <Label htmlFor="address">Address</Label>
-                  <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
-                  <span className="form-err">{this.state.errors["address"]}</span>
+                  <Label htmlFor="bulb_type">Bulb Type</Label>
+                  <Input type="text" id="bulb_type" value={this.state.fields.bulb_type} onChange={e => this.changeInput('bulb_type', e.target.value)} placeholder="Enter Bulb Type" />
+                  <span className="form-err">{this.state.errors["bulb_type"]}</span>
                 </FormGroup>
                 <FormGroup>
-                  <Label htmlFor="net_plan">AN/JN Office</Label>
-                  <Input type="text" id="an_jn_office" value={this.state.fields.an_jn_office} onChange={e => this.changeInput('an_jn_office', e.target.value)} placeholder="Enter An/JN Office" />
-                  <span className="form-err">{this.state.errors["an_jn_office"]}</span>
+                  <Label htmlFor="sell_status">Sell/Return</Label>
+                  <Input type="select" id="sell_status" value={this.state.fields.sell_status} onChange={e => this.changeInput('sell_status', e.target.value)}>
+                    <option value="return">Return</option>
+                    <option value="sold">Sold</option>
+                  </Input>
+                  <span className="form-err">{this.state.errors["sell_status"]}</span>
                 </FormGroup>
                 <FormGroup>
-                  <Label htmlFor="staywire">Staywire</Label>
-                  <Input type="date" id="staywire" value={this.state.fields.staywire} onChange={e => this.changeInput('staywire', e.target.value)} placeholder="Enter Staywire" />
-                  <span className="form-err">{this.state.errors["staywire"]}</span>
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Input type="text" id="quantity" value={this.state.fields.quantity} onChange={e => this.changeInput('quantity', e.target.value)} placeholder="Enter Quantity" />
+                  <span className="form-err">{this.state.errors["quantity"]}</span>
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="card_type">Debit/Credit</Label>
+                  <Input type="select" id="card_type" value={this.state.fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
+                    <option value="Debit">Debit</option>
+                    <option value="Credit">Credit</option>
+                  </Input>
+                  <span className="form-err">{this.state.errors["card_type"]}</span>
                 </FormGroup>
               </CardBody>
               <CardFooter>

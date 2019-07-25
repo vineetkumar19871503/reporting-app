@@ -22,9 +22,9 @@ class AddComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      'today_date': moment().format('DD/MM/YYYY'),
       'records': [],
       'fields': {
+        'date': moment().format('DD/MM/YYYY'),
         'number_of_poles': '',
         'address': '',
         'an_jn_office': '',
@@ -48,6 +48,7 @@ class AddComponent extends React.Component {
   resetForm() {
     this.setState({
       'fields': {
+        'date': moment().format('DD/MM/YYYY'),
         'number_of_poles': '',
         'address': '',
         'an_jn_office': '',
@@ -124,6 +125,7 @@ class AddComponent extends React.Component {
     self.validateForm(function () {
       self.showLoader();
       const fields = self.state.fields;
+      fields.date = moment().format('MM/DD/YYYY');
       console.log(fields);
       return;
       axios.post(
@@ -162,9 +164,9 @@ class AddComponent extends React.Component {
             <Form onSubmit={this.saveFormData}>
               <CardBody>
                 <FormGroup>
-                  <Label htmlFor="today_date">Date</Label><br />
+                  <Label htmlFor="date">Date</Label><br />
                   <div className="custom-form-field">
-                    <Input readOnly="readonly" type="text" id="today_date" value={this.state.today_date} />
+                    <Input readOnly="readonly" type="text" id="date" value={this.state.fields.date} />
                   </div>
                 </FormGroup>
                 <FormGroup>

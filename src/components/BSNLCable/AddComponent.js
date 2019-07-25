@@ -22,9 +22,9 @@ class AddComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      'today_date': moment().format('DD/MM/YYYY'),
       'records': [],
       'fields': {
+        'date': moment().format('DD/MM/YYYY'),
         'customer_name': '',
         'father_name': '',
         'mobile_number': '',
@@ -41,7 +41,7 @@ class AddComponent extends React.Component {
   componentDidMount() {
     const self = this;
     document.title = "BSNL Cable - Add";
-    self.getRecords();
+    // self.getRecords();
   }
   changeInput(field, value) {
     const state = Object.assign({}, this.state);
@@ -51,6 +51,7 @@ class AddComponent extends React.Component {
   resetForm() {
     this.setState({
       'fields': {
+        'date': moment().format('DD/MM/YYYY'),
         'customer_name': '',
         'father_name': '',
         'mobile_number': '',
@@ -132,8 +133,9 @@ class AddComponent extends React.Component {
     self.validateForm(function () {
       self.showLoader();
       const fields = self.state.fields;
+      fields.date = moment().format('MM/DD/YYYY');
       axios.post(
-        config.apiUrl + 'bsnl-cable/add',
+        config.apiUrl + 'bsnlcable/add',
         fields,
         {
           'headers': {
@@ -142,8 +144,8 @@ class AddComponent extends React.Component {
         }
       )
         .then(res => {
+          self.showLoader(false);
           if (res.data.is_err) {
-            self.showLoader(false);
             ToastStore.error(res.data.message);
           } else {
             ToastStore.success(res.data.message);
@@ -168,9 +170,9 @@ class AddComponent extends React.Component {
             <Form onSubmit={this.saveFormData}>
               <CardBody>
                 <FormGroup>
-                  <Label htmlFor="today_date">Date</Label><br />
+                  <Label htmlFor="date">Date</Label><br />
                   <div className="custom-form-field">
-                    <Input readOnly="readonly" type="text" id="today_date" value={this.state.today_date} />
+                    <Input readOnly="readonly" type="text" id="date" value={this.state.fields.date} />
                   </div>
                 </FormGroup>
                 <FormGroup>
