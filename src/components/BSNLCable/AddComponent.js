@@ -83,7 +83,11 @@ class AddComponent extends React.Component {
       })
       .catch(err => {
         self.showLoader(false);
-        ToastStore.error(err.message);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
       });
   }
   validateForm(cb) {
@@ -116,9 +120,10 @@ class AddComponent extends React.Component {
         break;
       }
       case 'number': {
-        if (!(/^\d*$/.test(fields[name]))) {
+        const numVal = fields[name].toString();
+        if (!(numVal.match(/^-?\d*(\.\d+)?$/))) {
           isFieldValid = false;
-          this.errors[name] = "Please enter number";
+          this.errors[name] = "Please enter a valid number";
         }
         break;
       }
@@ -154,7 +159,11 @@ class AddComponent extends React.Component {
         })
         .catch(err => {
           self.showLoader(false);
-          ToastStore.error(err.message);
+          let errorMsg = err.message;
+          if(err.response && err.response.data) {
+            errorMsg = err.response.data.message;
+          }
+          ToastStore.error(errorMsg);
         });
     });
   }

@@ -61,7 +61,11 @@ class ListComponent extends React.Component {
       })
       .catch(err => {
         self.showLoader(false);
-        ToastStore.error(err.message);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
       });
   }
   render() {

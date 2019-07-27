@@ -79,13 +79,18 @@ class AddComponent extends React.Component {
       })
       .catch(err => {
         self.showLoader(false);
-        ToastStore.error(err.message);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
       });
   }
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
     formIsValid = this._validateField('required', 'amount', formIsValid);
+    formIsValid = this._validateField('number', 'amount', formIsValid);
     formIsValid = this._validateField('required', 'bulb_type', formIsValid);
     formIsValid = this._validateField('required', 'sell_status', formIsValid);
     formIsValid = this._validateField('required', 'quantity', formIsValid);
@@ -111,9 +116,10 @@ class AddComponent extends React.Component {
         break;
       }
       case 'number': {
-        if (!(/^\d*$/.test(fields[name]))) {
+        const numVal = fields[name].toString();
+        if (!(numVal.match(/^-?\d*(\.\d+)?$/))) {
           isFieldValid = false;
-          this.errors[name] = "Please enter number";
+          this.errors[name] = "Please enter a valid number";
         }
         break;
       }
@@ -121,7 +127,7 @@ class AddComponent extends React.Component {
     }
     return isFieldValid;
   }
-  
+
   saveFormData(e) {
     e.preventDefault();
     const self = this;
@@ -129,8 +135,6 @@ class AddComponent extends React.Component {
       self.showLoader();
       const fields = self.state.fields;
       fields.date = moment().format('MM/DD/YYYY');
-      console.log(fields);
-      return;
       axios.post(
         config.apiUrl + 'discom/add',
         fields,
@@ -141,8 +145,8 @@ class AddComponent extends React.Component {
         }
       )
         .then(res => {
+          self.showLoader(false);
           if (res.data.is_err) {
-            self.showLoader(false);
             ToastStore.error(res.data.message);
           } else {
             ToastStore.success(res.data.message);
@@ -151,7 +155,11 @@ class AddComponent extends React.Component {
         })
         .catch(err => {
           self.showLoader(false);
-          ToastStore.error(err.message);
+          let errorMsg = err.message;
+          if (err.response && err.response.data) {
+            errorMsg = err.response.data.message;
+          }
+          ToastStore.error(errorMsg);
         });
     });
   }

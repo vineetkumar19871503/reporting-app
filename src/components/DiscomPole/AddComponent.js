@@ -77,7 +77,11 @@ class AddComponent extends React.Component {
       })
       .catch(err => {
         self.showLoader(false);
-        ToastStore.error(err.message);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
       });
   }
   validateForm(cb) {
@@ -108,9 +112,10 @@ class AddComponent extends React.Component {
         break;
       }
       case 'number': {
-        if (!(/^\d*$/.test(fields[name]))) {
+        const numVal = fields[name].toString();
+        if (!(numVal.match(/^-?\d*(\.\d+)?$/))) {
           isFieldValid = false;
-          this.errors[name] = "Please enter number";
+          this.errors[name] = "Please enter a valid number";
         }
         break;
       }
@@ -118,7 +123,7 @@ class AddComponent extends React.Component {
     }
     return isFieldValid;
   }
-  
+
   saveFormData(e) {
     e.preventDefault();
     const self = this;
@@ -126,10 +131,8 @@ class AddComponent extends React.Component {
       self.showLoader();
       const fields = self.state.fields;
       fields.date = moment().format('MM/DD/YYYY');
-      console.log(fields);
-      return;
       axios.post(
-        config.apiUrl + 'discom-pole/add',
+        config.apiUrl + 'discompole/add',
         fields,
         {
           'headers': {
@@ -138,8 +141,8 @@ class AddComponent extends React.Component {
         }
       )
         .then(res => {
+          self.showLoader(false);
           if (res.data.is_err) {
-            self.showLoader(false);
             ToastStore.error(res.data.message);
           } else {
             ToastStore.success(res.data.message);
@@ -148,7 +151,11 @@ class AddComponent extends React.Component {
         })
         .catch(err => {
           self.showLoader(false);
-          ToastStore.error(err.message);
+          let errorMsg = err.message;
+          if (err.response && err.response.data) {
+            errorMsg = err.response.data.message;
+          }
+          ToastStore.error(errorMsg);
         });
     });
   }
@@ -186,7 +193,7 @@ class AddComponent extends React.Component {
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="staywire">Staywire</Label>
-                  <Input type="date" id="staywire" value={this.state.fields.staywire} onChange={e => this.changeInput('staywire', e.target.value)} placeholder="Enter Staywire" />
+                  <Input type="text" id="staywire" value={this.state.fields.staywire} onChange={e => this.changeInput('staywire', e.target.value)} placeholder="Enter Staywire" />
                   <span className="form-err">{this.state.errors["staywire"]}</span>
                 </FormGroup>
               </CardBody>

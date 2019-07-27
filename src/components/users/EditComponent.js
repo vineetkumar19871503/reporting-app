@@ -64,12 +64,16 @@ class EditUserComponent extends React.Component {
       })
       .catch(err => {
         self.showLoader(false);
-        ToastStore.error(err.message);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
       });
   }
   changeInput(field, value) {
-    if(field==='status') {
-      value = value==='true';
+    if (field === 'status') {
+      value = value === 'true';
     }
     const state = Object.assign({}, this.state);
     state['fields'][field] = value;
@@ -103,9 +107,10 @@ class EditUserComponent extends React.Component {
         break;
       }
       case 'number': {
-        if (!(/^\d*$/.test(fields[name]))) {
+        const numVal = fields[name].toString();
+        if (!(numVal.match(/^-?\d*(\.\d+)?$/))) {
           isFieldValid = false;
-          this.errors[name] = "Please enter number";
+          this.errors[name] = "Please enter a valid number";
         }
         break;
       }
@@ -146,7 +151,11 @@ class EditUserComponent extends React.Component {
           }
         })
         .catch(err => {
-          ToastStore.error(err.message);
+          let errorMsg = err.message;
+          if (err.response && err.response.data) {
+            errorMsg = err.response.data.message;
+          }
+          ToastStore.error(errorMsg);
         });
     });
   }
@@ -183,11 +192,11 @@ class EditUserComponent extends React.Component {
                   </Col>
                   <Col md="10">
                     <FormGroup check inline className="radio">
-                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status1" name="status" checked={_f.status===true} value={true} />
+                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status1" name="status" checked={_f.status === true} value={true} />
                       <Label check className="form-check-label" htmlFor="status1">Active</Label>
                     </FormGroup>
                     <FormGroup check inline className="radio">
-                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status2" name="status" checked={_f.status===false} value={false} />
+                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status2" name="status" checked={_f.status === false} value={false} />
                       <Label check className="form-check-label" htmlFor="status2">Inactive</Label>
                     </FormGroup>
                     <span className="form-err">{this.state.errors["status"]}</span>
