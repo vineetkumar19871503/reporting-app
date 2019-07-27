@@ -29,8 +29,8 @@ class ListComponent extends React.Component {
     this.state = {
       'search': {
         'k_number': '',
-        'startDate': new Date(),
-        'endDate': new Date()
+        'startDate': null,
+        'endDate': null
       },
       'bills': [],
       'printData': {},
@@ -117,8 +117,8 @@ class ListComponent extends React.Component {
     self.setState({
       'search': {
         'k_number': '',
-        'startDate': '',
-        'endDate': ''
+        'startDate': null,
+        'endDate': null
       }
     }, () => self.getBills());
   }

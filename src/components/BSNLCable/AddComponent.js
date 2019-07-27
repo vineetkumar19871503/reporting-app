@@ -2,6 +2,8 @@ import moment from 'moment';
 import React from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
+import ReactTable from "react-table";
+import "react-table/react-table.css";
 import { ToastContainer, ToastStore } from 'react-toasts';
 import {
   Button,
@@ -23,6 +25,11 @@ class AddComponent extends React.Component {
     super(props);
     this.state = {
       'records': [],
+      'search': {
+        'search_customer_name': '',
+        'search_mobile_number': '',
+        'search_status': ''
+      },
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'customer_name': '',
@@ -33,21 +40,68 @@ class AddComponent extends React.Component {
         'reminder_date': '',
         'status': ''
       },
-      'errors': {}
+      'errors': {},
+      'cols': [
+        {
+          'Header': 'Date',
+          'accessor': 'display_date'
+        },
+        {
+          'Header': 'Customer Name',
+          'accessor': 'customer_name'
+        },
+        {
+          'Header': 'Mobile',
+          'accessor': 'mobile_number'
+        },
+        {
+          'Header': 'Address',
+          'accessor': 'address'
+        },
+        {
+          'Header': 'Net Plan',
+          'accessor': 'net_plan'
+        },
+        {
+          'Header': 'Reminder Date',
+          'accessor': 'reminder_date'
+        },
+        {
+          'Header': 'Status',
+          'accessor': 'status'
+        },
+        {
+          'Header': 'Actions',
+          Cell: row => (
+            <Row>
+              <Col md="6"><Button block size="sm" color="success" onClick={() => this.updateRecord(row)}>Edit</Button></Col>
+            </Row>
+          )
+        }
+      ]
     };
     this.saveFormData = this.saveFormData.bind(this);
     this.resetForm = this.resetForm.bind(this);
+    this.clearSearch = this.clearSearch.bind(this);
+    this.searchData = this.searchData.bind(this);
+    this.updateRecord = this.updateRecord.bind(this);
   }
+
   componentDidMount() {
-    const self = this;
     document.title = "BSNL Cable - Add";
-    // self.getRecords();
+    this.getRecords();
   }
-  changeInput(field, value) {
+
+  changeInput(field, value, inputType) {
     const state = Object.assign({}, this.state);
-    state['fields'][field] = value;
+    if (inputType) {
+      state['search'][field] = value;
+    } else {
+      state['fields'][field] = value;
+    }
     this.setState(state);
   }
+
   resetForm() {
     this.setState({
       'fields': {
@@ -62,23 +116,25 @@ class AddComponent extends React.Component {
       }
     });
   }
+
   showLoader(show = true) {
     const ldr = document.getElementById('ajax-loader-container');
     show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
   }
-  getRecords(keyword) {
+
+  getRecords(params) {
     const self = this;
-    self.showLoader();
-    axios.get(config.apiUrl + 'consumers/list', {
+    const p = {
       headers: { 'Authorization': 'Bearer ' + self.props.user.token }
-    })
+    };
+    if (params) {
+      p.params = params;
+    }
+    self.showLoader();
+    axios.get(config.apiUrl + 'bsnlcable/list', p)
       .then(res => {
         self.showLoader(false);
-        const records = res.data.data.map(dt => {
-          dt.value = dt.consumer_name;
-          dt.name = dt.k_number;
-          return dt;
-        });
+        const records = res.data.data;
         self.setState({ 'records': records });
       })
       .catch(err => {
@@ -90,6 +146,7 @@ class AddComponent extends React.Component {
         ToastStore.error(errorMsg);
       });
   }
+
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
@@ -105,6 +162,7 @@ class AddComponent extends React.Component {
       cb();
     }
   }
+
   _validateField(type = 'required', name, formIsValid) {
     let fields = this.state.fields;
     let isFieldValid = formIsValid;
@@ -131,7 +189,7 @@ class AddComponent extends React.Component {
     }
     return isFieldValid;
   }
-  
+
   saveFormData(e) {
     e.preventDefault();
     const self = this;
@@ -155,17 +213,39 @@ class AddComponent extends React.Component {
           } else {
             ToastStore.success(res.data.message);
             self.resetForm();
+            self.clearSearch();
+            self.getRecords();
           }
         })
         .catch(err => {
           self.showLoader(false);
           let errorMsg = err.message;
-          if(err.response && err.response.data) {
+          if (err.response && err.response.data) {
             errorMsg = err.response.data.message;
           }
           ToastStore.error(errorMsg);
         });
     });
+  }
+
+  clearSearch() {
+    this.setState({
+      'search': {
+        'search_customer_name': '',
+        'search_mobile_number': '',
+        'search_status': ''
+      }
+    });
+    this.getRecords();
+  }
+
+  searchData(e) {
+    e.preventDefault();
+    this.getRecords(this.state.search);
+  }
+
+  updateRecord(data) {
+
   }
   render() {
     return <div className="animated fadeIn">
@@ -178,51 +258,71 @@ class AddComponent extends React.Component {
             </CardHeader>
             <Form onSubmit={this.saveFormData}>
               <CardBody>
-                <FormGroup>
-                  <Label htmlFor="date">Date</Label><br />
-                  <div className="custom-form-field">
-                    <Input readOnly="readonly" type="text" id="date" value={this.state.fields.date} />
-                  </div>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="customer_name">Customer Name</Label>
-                  <Input type="text" id="customer_name" value={this.state.fields.customer_name} onChange={e => this.changeInput('customer_name', e.target.value)} placeholder="Enter Customer Name" />
-                  <span className="form-err">{this.state.errors["customer_name"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="father_name">Father Name</Label>
-                  <Input type="text" id="father_name" value={this.state.fields.father_name} onChange={e => this.changeInput('father_name', e.target.value)} placeholder="Enter Father's Name" />
-                  <span className="form-err">{this.state.errors["father_name"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="mobile_number">Mobile No</Label>
-                  <Input type="text" id="mobile_number" value={this.state.fields.mobile_number} onChange={e => this.changeInput('mobile_number', e.target.value)} placeholder="Enter Mobile Number" />
-                  <span className="form-err">{this.state.errors["mobile_number"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="address">Address</Label>
-                  <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
-                  <span className="form-err">{this.state.errors["address"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="net_plan">Net Plan</Label>
-                  <Input type="text" id="net_plan" value={this.state.fields.net_plan} onChange={e => this.changeInput('net_plan', e.target.value)} placeholder="Enter Net Plan" />
-                  <span className="form-err">{this.state.errors["net_plan"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="reminder_date">Reminder Date</Label>
-                  <Input type="date" id="reminder_date" value={this.state.fields.reminder_date} onChange={e => this.changeInput('reminder_date', e.target.value)} placeholder="Enter Reminder Date" />
-                  <span className="form-err">{this.state.errors["reminder_date"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="status">Status</Label>
-                  <Input type="select" id="status" value={this.state.fields.status} onChange={e => this.changeInput('status', e.target.value)}>
-                    <option value="">-- Please Select Status --</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                  </Input>
-                  <span className="form-err">{this.state.errors["status"]}</span>
-                </FormGroup>
+                <Row>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="date">Date</Label><br />
+                      <div className="custom-form-field">
+                        <Input readOnly="readonly" type="text" id="date" value={this.state.fields.date} />
+                      </div>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="customer_name">Customer Name</Label>
+                      <Input type="text" id="customer_name" value={this.state.fields.customer_name} onChange={e => this.changeInput('customer_name', e.target.value)} placeholder="Enter Customer Name" />
+                      <span className="form-err">{this.state.errors["customer_name"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="father_name">Father Name</Label>
+                      <Input type="text" id="father_name" value={this.state.fields.father_name} onChange={e => this.changeInput('father_name', e.target.value)} placeholder="Enter Father's Name" />
+                      <span className="form-err">{this.state.errors["father_name"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="mobile_number">Mobile No</Label>
+                      <Input type="text" id="mobile_number" value={this.state.fields.mobile_number} onChange={e => this.changeInput('mobile_number', e.target.value)} placeholder="Enter Mobile Number" />
+                      <span className="form-err">{this.state.errors["mobile_number"]}</span>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="address">Address</Label>
+                      <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
+                      <span className="form-err">{this.state.errors["address"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="net_plan">Net Plan</Label>
+                      <Input type="text" id="net_plan" value={this.state.fields.net_plan} onChange={e => this.changeInput('net_plan', e.target.value)} placeholder="Enter Net Plan" />
+                      <span className="form-err">{this.state.errors["net_plan"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="reminder_date">Reminder Date</Label>
+                      <Input type="date" id="reminder_date" value={this.state.fields.reminder_date} onChange={e => this.changeInput('reminder_date', e.target.value)} placeholder="Enter Reminder Date" />
+                      <span className="form-err">{this.state.errors["reminder_date"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="status">Status</Label>
+                      <Input type="select" id="status" value={this.state.fields.status} onChange={e => this.changeInput('status', e.target.value)}>
+                        <option value="">-- Select Status --</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </Input>
+                      <span className="form-err">{this.state.errors["status"]}</span>
+                    </FormGroup>
+                  </Col>
+                </Row>
               </CardBody>
               <CardFooter>
                 <Button type="submit" size="sm" color="primary">Submit</Button>&nbsp;
@@ -230,6 +330,53 @@ class AddComponent extends React.Component {
               </CardFooter>
             </Form>
           </Card>
+
+          {/* =================== Tabble And Search Form Start =================== */}
+          <Card>
+            <CardBody>
+              <Form onSubmit={this.searchData}>
+                <Row>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="search_customer_name">Customer Name</Label>
+                      <Input type="text" id="search_customer_name" value={this.state.search.search_customer_name} onChange={e => this.changeInput('search_customer_name', e.target.value, 'search')} placeholder="Enter Customer Name" />
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="search_mobile_number">Mobile No</Label>
+                      <Input type="text" id="search_mobile_number" value={this.state.search.search_mobile_number} onChange={e => this.changeInput('search_mobile_number', e.target.value, 'search')} placeholder="Enter Mobile Number" />
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="search_status">Status</Label>
+                      <Input type="select" id="search_status" value={this.state.search.search_status} onChange={e => this.changeInput('search_status', e.target.value, 'search')}>
+                        <option value="">-- Select Status --</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </Input>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <br />
+                    <div style={{ paddingTop: '6px' }}>
+                      <Button color="primary" size="sm" className="px-4">Search</Button>&nbsp;
+                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>
+                    </div>
+                  </Col>
+                </Row>
+              </Form>
+              <ReactTable
+                data={this.state.records}
+                columns={this.state.cols}
+                defaultPageSize={10}
+                className="-striped -highlight"
+              />
+            </CardBody>
+          </Card>
+          {/* =================== Tabble And Search Form End =================== */}
+
         </Col>
       </Row>
     </div>;
