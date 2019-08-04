@@ -5,25 +5,11 @@
   display:inline-block;
 }
 
-ul {
-  list-style-type: none;
-}
-
-ul li {
-  display: inline-block;
-  margin-top:10px;
-}
-
-ul li a{
-  padding: 10px;
-  text-align: center;
-  font-size:12px;
-}
-
-.home-logo{
-  height: 30px;
-}
-
 .carousel-inner  {
   text-align: center;
+  margin-bottom:100px;
+}
+
+.carousel-inner img {
+  height:350px;
 }

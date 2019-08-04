@@ -1,7 +1,6 @@
 
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import HomePageLogo from '../../assets/img/home-page-logo.png';
+import Header from '../../views/HomeLayout/Header';
 import './styles.css';
 import {
     Container,
@@ -16,13 +15,7 @@ export default class ContactUsComponent extends Component {
     render() {
         return (
             <div className="main">
-                <ul>
-                    <li><Link to="/home"><img className="home-logo" src={HomePageLogo} /></Link></li>
-                    <li><Link to="/services">Services</Link></li>
-                    <li><Link to="/contact-us">Contact Us</Link></li>
-                    <li><Link to="/new-bsnl-connection">BSNL Connection</Link></li>
-                    <li><Link to="/login">Login</Link></li>
-                </ul>
+                <Header />
                 <div>
                     <Container>
                         <CardBody>
