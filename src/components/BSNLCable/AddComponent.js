@@ -2,6 +2,8 @@ import moment from 'moment';
 import React from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 import { ToastContainer, ToastStore } from 'react-toasts';
@@ -16,7 +18,10 @@ import {
   FormGroup,
   Input,
   Label,
-  Row
+  Row,
+  Modal,
+  ModalHeader,
+  ModalBody
 } from 'reactstrap';
 import config from '../../config.js';
 class AddComponent extends React.Component {
@@ -24,11 +29,24 @@ class AddComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      'is_update': false,
+      'show_modal': false,
+      'update_index': 0,
       'records': [],
       'search': {
         'search_customer_name': '',
         'search_mobile_number': '',
         'search_status': ''
+      },
+      'edit_fields': {
+        'date': moment().format('DD/MM/YYYY'),
+        'customer_name': '',
+        'father_name': '',
+        'mobile_number': '',
+        'address': '',
+        'net_plan': '',
+        'reminder_date': null,
+        'status': ''
       },
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
@@ -37,10 +55,11 @@ class AddComponent extends React.Component {
         'mobile_number': '',
         'address': '',
         'net_plan': '',
-        'reminder_date': '',
+        'reminder_date': null,
         'status': ''
       },
       'errors': {},
+      'update_errors': {},
       'cols': [
         {
           'Header': 'Date',
@@ -64,7 +83,7 @@ class AddComponent extends React.Component {
         },
         {
           'Header': 'Reminder Date',
-          'accessor': 'reminder_date'
+          'accessor': 'display_reminder_date'
         },
         {
           'Header': 'Status',
@@ -74,7 +93,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => this.updateRecord(row)}>Edit</Button></Col>
+              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -85,6 +104,13 @@ class AddComponent extends React.Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.searchData = this.searchData.bind(this);
     this.updateRecord = this.updateRecord.bind(this);
+    this.toggleModal = this.toggleModal.bind(this);
+  }
+
+  toggleModal() {
+    let show_modal = !this.state.show_modal;
+    let is_update = show_modal === true;
+    this.setState({ show_modal, is_update });
   }
 
   componentDidMount() {
@@ -96,6 +122,8 @@ class AddComponent extends React.Component {
     const state = Object.assign({}, this.state);
     if (inputType) {
       state['search'][field] = value;
+    } else if (this.state.is_update) {
+      state['edit_fields'][field] = value;
     } else {
       state['fields'][field] = value;
     }
@@ -104,6 +132,7 @@ class AddComponent extends React.Component {
 
   resetForm() {
     this.setState({
+      'errors': {},
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'customer_name': '',
@@ -111,7 +140,7 @@ class AddComponent extends React.Component {
         'mobile_number': '',
         'address': '',
         'net_plan': '',
-        'reminder_date': '',
+        'reminder_date': null,
         'status': ''
       }
     });
@@ -157,21 +186,21 @@ class AddComponent extends React.Component {
     formIsValid = this._validateField('required', 'net_plan', formIsValid);
     formIsValid = this._validateField('required', 'reminder_date', formIsValid);
     formIsValid = this._validateField('required', 'status', formIsValid);
-    this.setState({ 'errors': this.errors });
+    this.state.is_update ? this.setState({ 'update_errors': this.errors }) : this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
     }
   }
 
   _validateField(type = 'required', name, formIsValid) {
-    let fields = this.state.fields;
+    let fields = this.state.is_update ? this.state.edit_fields : this.state.fields;
     let isFieldValid = formIsValid;
     if (this.errors[name]) {
       return;
     }
     switch (type) {
       case 'required': {
-        if (!fields[name] || !fields[name].trim().length) {
+        if (!fields[name] || !fields[name].toString().trim().length) {
           isFieldValid = false;
           this.errors[name] = "This field cannot be empty";
         }
@@ -195,7 +224,8 @@ class AddComponent extends React.Component {
     const self = this;
     self.validateForm(function () {
       self.showLoader();
-      const fields = self.state.fields;
+      const fields = Object.assign({}, self.state.fields);
+      fields.reminder_date = moment(new Date(fields.reminder_date)).format("MM/DD/YYYY");
       fields.date = moment().format('MM/DD/YYYY');
       axios.post(
         config.apiUrl + 'bsnlcable/add',
@@ -244,9 +274,58 @@ class AddComponent extends React.Component {
     this.getRecords(this.state.search);
   }
 
-  updateRecord(data) {
-
+  updateRecord(e) {
+    e.preventDefault();
+    const self = this;
+    self.validateForm(function () {
+      self.showLoader();
+      const fields = Object.assign({}, self.state.edit_fields);
+      fields.reminder_date = moment(new Date(fields.reminder_date)).format("MM/DD/YYYY");
+      fields.date = moment().format('MM/DD/YYYY');
+      fields.display_date = moment(fields.date).format("DD/MM/YYYY");
+      fields.display_reminder_date = moment(fields.reminder_date).format("DD/MM/YYYY");
+      axios.post(
+        config.apiUrl + 'bsnlcable/edit',
+        fields,
+        {
+          'headers': {
+            'Authorization': 'Bearer ' + self.props.user.token
+          }
+        }
+      )
+        .then(res => {
+          self.showLoader(false);
+          if (res.data.is_err) {
+            ToastStore.error(res.data.message);
+          } else {
+            const st = self.state;
+            const records = st.records;
+            const newRecords = [];
+            let counter = 0;
+            for (let record of records) {
+              if (counter === st.update_index) {
+                record = fields;
+              }
+              const newRecord = { ...record };
+              newRecords.push(newRecord);
+              counter++;
+            }
+            self.setState({ records: newRecords });
+            self.toggleModal();
+            ToastStore.success(res.data.message);
+          }
+        })
+        .catch(err => {
+          self.showLoader(false);
+          let errorMsg = err.message;
+          if (err.response && err.response.data) {
+            errorMsg = err.response.data.message;
+          }
+          ToastStore.error(errorMsg);
+        });
+    });
   }
+
   render() {
     return <div className="animated fadeIn">
       <Row>
@@ -292,9 +371,15 @@ class AddComponent extends React.Component {
                 <Row>
                   <Col md="3">
                     <FormGroup>
-                      <Label htmlFor="address">Address</Label>
-                      <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
-                      <span className="form-err">{this.state.errors["address"]}</span>
+                      <Label htmlFor="reminder_date">Reminder Date</Label>
+                      <DatePicker
+                        id="reminder_date"
+                        className='form-control'
+                        placeholderText="Enter Reminder Date"
+                        selected={this.state.fields.reminder_date ? new Date(this.state.fields.reminder_date) : this.state.fields.reminder_date}
+                        onChange={date => this.changeInput('reminder_date', date.toString())}
+                      />
+                      <span className="form-err">{this.state.errors["reminder_date"]}</span>
                     </FormGroup>
                   </Col>
                   <Col md="3">
@@ -306,13 +391,6 @@ class AddComponent extends React.Component {
                   </Col>
                   <Col md="3">
                     <FormGroup>
-                      <Label htmlFor="reminder_date">Reminder Date</Label>
-                      <Input type="date" id="reminder_date" value={this.state.fields.reminder_date} onChange={e => this.changeInput('reminder_date', e.target.value)} placeholder="Enter Reminder Date" />
-                      <span className="form-err">{this.state.errors["reminder_date"]}</span>
-                    </FormGroup>
-                  </Col>
-                  <Col md="3">
-                    <FormGroup>
                       <Label htmlFor="status">Status</Label>
                       <Input type="select" id="status" value={this.state.fields.status} onChange={e => this.changeInput('status', e.target.value)}>
                         <option value="">-- Select Status --</option>
@@ -320,6 +398,13 @@ class AddComponent extends React.Component {
                         <option value="Completed">Completed</option>
                       </Input>
                       <span className="form-err">{this.state.errors["status"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="3">
+                    <FormGroup>
+                      <Label htmlFor="address">Address</Label>
+                      <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
+                      <span className="form-err">{this.state.errors["address"]}</span>
                     </FormGroup>
                   </Col>
                 </Row>
@@ -376,6 +461,97 @@ class AddComponent extends React.Component {
             </CardBody>
           </Card>
           {/* =================== Tabble And Search Form End =================== */}
+
+          {/* ===================== Edit Modal Start =================== */}
+          <Modal isOpen={this.state.show_modal} toggle={this.toggleModal}>
+            <ModalHeader toggle={this.toggleModal}>Edit</ModalHeader>
+            <ModalBody>
+              <Form onSubmit={this.updateRecord}>
+                <CardBody>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="date">Date</Label><br />
+                        <div className="custom-form-field">
+                          <Input readOnly="readonly" type="text" id="date" value={this.state.edit_fields.date} />
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="customer_name">Customer Name</Label>
+                        <Input type="text" id="customer_name" value={this.state.edit_fields.customer_name} onChange={e => this.changeInput('customer_name', e.target.value)} placeholder="Enter Customer Name" />
+                        <span className="form-err">{this.state.update_errors["customer_name"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="father_name">Father Name</Label>
+                        <Input type="text" id="father_name" value={this.state.edit_fields.father_name} onChange={e => this.changeInput('father_name', e.target.value)} placeholder="Enter Father's Name" />
+                        <span className="form-err">{this.state.update_errors["father_name"]}</span>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="mobile_number">Mobile No</Label>
+                        <Input type="text" id="mobile_number" value={this.state.edit_fields.mobile_number} onChange={e => this.changeInput('mobile_number', e.target.value)} placeholder="Enter Mobile Number" />
+                        <span className="form-err">{this.state.update_errors["mobile_number"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="status">Status</Label>
+                        <Input type="select" id="status" value={this.state.edit_fields.status} onChange={e => this.changeInput('status', e.target.value)}>
+                          <option value="">-- Select Status --</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                        </Input>
+                        <span className="form-err">{this.state.update_errors["status"]}</span>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="net_plan">Net Plan</Label>
+                        <Input type="text" id="net_plan" value={this.state.edit_fields.net_plan} onChange={e => this.changeInput('net_plan', e.target.value)} placeholder="Enter Net Plan" />
+                        <span className="form-err">{this.state.update_errors["net_plan"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="reminder_date">Reminder Date</Label>
+                        <DatePicker
+                          id="reminder_date"
+                          className='form-control'
+                          placeholderText="Enter Reminder Date"
+                          selected={this.state.edit_fields.reminder_date ? new Date(this.state.edit_fields.reminder_date) : this.state.edit_fields.reminder_date}
+                          onChange={date => this.changeInput('reminder_date', date.toString())}
+                        />
+                        <span className="form-err">{this.state.update_errors["reminder_date"]}</span>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="address">Address</Label>
+                        <Input type="textarea" id="address" value={this.state.edit_fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
+                        <span className="form-err">{this.state.update_errors["address"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                </CardBody>
+                <CardFooter>
+                  <Button type="submit" size="sm" color="primary">Update</Button>&nbsp;
+                  <Button type="button" onClick={this.toggleModal} size="sm" color="danger">Cancel</Button>
+                </CardFooter>
+              </Form>
+            </ModalBody>
+          </Modal>
+          {/* ===================== Edit Modal Start =================== */}
 
         </Col>
       </Row>

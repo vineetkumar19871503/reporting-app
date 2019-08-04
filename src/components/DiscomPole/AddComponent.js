@@ -18,7 +18,10 @@ import {
   FormGroup,
   Input,
   Label,
-  Row
+  Row,
+  Modal,
+  ModalHeader,
+  ModalBody
 } from 'reactstrap';
 import config from '../../config.js';
 class AddComponent extends React.Component {
@@ -26,11 +29,21 @@ class AddComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      'is_update': false,
+      'show_modal': false,
+      'update_index': 0,
       'search': {
         'start_date': null,
         'end_date': null
       },
       'records': [],
+      'edit_fields': {
+        'date': moment().format('DD/MM/YYYY'),
+        'number_of_poles': '',
+        'address': '',
+        'an_jn_office': '',
+        'staywire': ''
+      },
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'number_of_poles': '',
@@ -39,6 +52,7 @@ class AddComponent extends React.Component {
         'staywire': ''
       },
       'errors': {},
+      'update_errors': {},
       'cols': [
         {
           'Header': 'Date',
@@ -64,7 +78,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => this.updateRecord(row)}>Edit</Button></Col>
+              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -75,6 +89,13 @@ class AddComponent extends React.Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.searchData = this.searchData.bind(this);
     this.updateRecord = this.updateRecord.bind(this);
+    this.toggleModal = this.toggleModal.bind(this);
+  }
+
+  toggleModal() {
+    let show_modal = !this.state.show_modal;
+    let is_update = show_modal === true;
+    this.setState({ show_modal, is_update });
   }
 
   componentDidMount() {
@@ -87,6 +108,8 @@ class AddComponent extends React.Component {
     const state = Object.assign({}, this.state);
     if (inputType) {
       state['search'][field] = value;
+    } else if (this.state.is_update) {
+      state['edit_fields'][field] = value;
     } else {
       state['fields'][field] = value;
     }
@@ -134,6 +157,7 @@ class AddComponent extends React.Component {
         ToastStore.error(errorMsg);
       });
   }
+
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
@@ -142,20 +166,20 @@ class AddComponent extends React.Component {
     formIsValid = this._validateField('required', 'address', formIsValid);
     formIsValid = this._validateField('required', 'an_jn_office', formIsValid);
     formIsValid = this._validateField('required', 'staywire', formIsValid);
-    this.setState({ 'errors': this.errors });
+    this.state.is_update ? this.setState({ 'update_errors': this.errors }) : this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
     }
   }
   _validateField(type = 'required', name, formIsValid) {
-    let fields = this.state.fields;
+    let fields = this.state.is_update ? this.state.edit_fields : this.state.fields;
     let isFieldValid = formIsValid;
     if (this.errors[name]) {
       return;
     }
     switch (type) {
       case 'required': {
-        if (!fields[name] || !fields[name].trim().length) {
+        if (!fields[name] || !fields[name].toString().trim().length) {
           isFieldValid = false;
           this.errors[name] = "This field cannot be empty";
         }
@@ -227,8 +251,55 @@ class AddComponent extends React.Component {
     this.getRecords(this.state.search);
   }
 
-  updateRecord(data) {
-
+  updateRecord(e) {
+    e.preventDefault();
+    const self = this;
+    self.validateForm(function () {
+      self.showLoader();
+      const fields = Object.assign({}, self.state.edit_fields);
+      fields.reminder_date = moment(new Date(fields.reminder_date)).format("MM/DD/YYYY");
+      fields.date = moment().format('MM/DD/YYYY');
+      fields.display_date = moment(fields.date).format("DD/MM/YYYY");
+      axios.post(
+        config.apiUrl + 'discompole/edit',
+        fields,
+        {
+          'headers': {
+            'Authorization': 'Bearer ' + self.props.user.token
+          }
+        }
+      )
+        .then(res => {
+          self.showLoader(false);
+          if (res.data.is_err) {
+            ToastStore.error(res.data.message);
+          } else {
+            const st = self.state;
+            const records = st.records;
+            const newRecords = [];
+            let counter = 0;
+            for (let record of records) {
+              if (counter === st.update_index) {
+                record = fields;
+              }
+              const newRecord = { ...record };
+              newRecords.push(newRecord);
+              counter++;
+            }
+            self.setState({ records: newRecords });
+            self.toggleModal();
+            ToastStore.success(res.data.message);
+          }
+        })
+        .catch(err => {
+          self.showLoader(false);
+          let errorMsg = err.message;
+          if (err.response && err.response.data) {
+            errorMsg = err.response.data.message;
+          }
+          ToastStore.error(errorMsg);
+        });
+    });
   }
 
   render() {
@@ -243,7 +314,7 @@ class AddComponent extends React.Component {
             <Form onSubmit={this.saveFormData}>
               <CardBody>
                 <Row>
-                  <Col md="4">
+                  <Col md="6">
                     <FormGroup>
                       <Label htmlFor="date">Date</Label><br />
                       <div className="custom-form-field">
@@ -251,22 +322,22 @@ class AddComponent extends React.Component {
                       </div>
                     </FormGroup>
                   </Col>
-                  <Col md="4">
+                  <Col md="6">
                     <FormGroup>
                       <Label htmlFor="number_of_poles">No. Of Pole</Label>
                       <Input type="text" id="number_of_poles" value={this.state.fields.number_of_poles} onChange={e => this.changeInput('number_of_poles', e.target.value)} placeholder="Enter No. Of Poles" />
                       <span className="form-err">{this.state.errors["number_of_poles"]}</span>
                     </FormGroup>
                   </Col>
-                  <Col md="4">
-                    <FormGroup>
-                      <Label htmlFor="address">Address</Label>
-                      <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
-                      <span className="form-err">{this.state.errors["address"]}</span>
-                    </FormGroup>
-                  </Col>
                 </Row>
                 <Row>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label htmlFor="staywire">Staywire</Label>
+                      <Input type="text" id="staywire" value={this.state.fields.staywire} onChange={e => this.changeInput('staywire', e.target.value)} placeholder="Enter Staywire" />
+                      <span className="form-err">{this.state.errors["staywire"]}</span>
+                    </FormGroup>
+                  </Col>
                   <Col md="6">
                     <FormGroup>
                       <Label htmlFor="net_plan">AN/JN Office</Label>
@@ -274,11 +345,13 @@ class AddComponent extends React.Component {
                       <span className="form-err">{this.state.errors["an_jn_office"]}</span>
                     </FormGroup>
                   </Col>
-                  <Col md="6">
+                </Row>
+                <Row>
+                  <Col md="12">
                     <FormGroup>
-                      <Label htmlFor="staywire">Staywire</Label>
-                      <Input type="text" id="staywire" value={this.state.fields.staywire} onChange={e => this.changeInput('staywire', e.target.value)} placeholder="Enter Staywire" />
-                      <span className="form-err">{this.state.errors["staywire"]}</span>
+                      <Label htmlFor="address">Address</Label>
+                      <Input type="textarea" id="address" value={this.state.fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
+                      <span className="form-err">{this.state.errors["address"]}</span>
                     </FormGroup>
                   </Col>
                 </Row>
@@ -335,6 +408,65 @@ class AddComponent extends React.Component {
             </CardBody>
           </Card>
           {/* =================== Tabble And Search Form End =================== */}
+
+          {/* ===================== Edit Modal Start =================== */}
+          <Modal isOpen={this.state.show_modal} toggle={this.toggleModal}>
+            <ModalHeader toggle={this.toggleModal}>Edit</ModalHeader>
+            <ModalBody>
+              <Form onSubmit={this.updateRecord}>
+                <CardBody>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="date">Date</Label><br />
+                        <div className="custom-form-field">
+                          <Input readOnly="readonly" type="text" id="date" value={this.state.edit_fields.date} />
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="number_of_poles">No. Of Pole</Label>
+                        <Input type="text" id="number_of_poles" value={this.state.edit_fields.number_of_poles} onChange={e => this.changeInput('number_of_poles', e.target.value)} placeholder="Enter No. Of Poles" />
+                        <span className="form-err">{this.state.update_errors["number_of_poles"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="staywire">Staywire</Label>
+                        <Input type="text" id="staywire" value={this.state.edit_fields.staywire} onChange={e => this.changeInput('staywire', e.target.value)} placeholder="Enter Staywire" />
+                        <span className="form-err">{this.state.update_errors["staywire"]}</span>
+                      </FormGroup>
+                    </Col>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label htmlFor="net_plan">AN/JN Office</Label>
+                        <Input type="text" id="an_jn_office" value={this.state.edit_fields.an_jn_office} onChange={e => this.changeInput('an_jn_office', e.target.value)} placeholder="Enter An/JN Office" />
+                        <span className="form-err">{this.state.update_errors["an_jn_office"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="12">
+                      <FormGroup>
+                        <Label htmlFor="address">Address</Label>
+                        <Input type="textarea" id="address" value={this.state.edit_fields.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
+                        <span className="form-err">{this.state.update_errors["address"]}</span>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                </CardBody>
+                <CardFooter>
+                  <Button type="submit" size="sm" color="primary">Update</Button>&nbsp;
+                  <Button type="button" onClick={this.toggleModal} size="sm" color="danger">Cancel</Button>
+                </CardFooter>
+              </Form>
+            </ModalBody>
+          </Modal>
+          {/* ===================== Edit Modal Start =================== */}
+
         </Col>
       </Row>
     </div>;

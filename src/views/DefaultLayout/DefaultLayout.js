@@ -53,36 +53,40 @@ class DefaultLayout extends Component {
   }
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
   signOut(e) {
-    if(e) {
+    if (e) {
       e.preventDefault();
     }
     this.props.logout();
     this.props.history.replace('/login');
   }
   componentWillMount() {
-    const user = this.props.user;
-    if (!user || (typeof user === 'object' && !Object.keys(user).length)) {
-      this.props.history.push('/login');
+    if (this.props.location.pathname === '/') {
+      this.props.history.push('/home');
     } else {
-      const self = this;
-      axios.get(config.apiUrl + 'users/checkSession', {
-        headers: { 'Authorization': 'Bearer ' + user.token }
-      })
-        .then(res => {
+      const user = this.props.user;
+      if (!user || (typeof user === 'object' && !Object.keys(user).length)) {
+        this.props.history.push('/login');
+      } else {
+        const self = this;
+        axios.get(config.apiUrl + 'users/checkSession', {
+          headers: { 'Authorization': 'Bearer ' + user.token }
         })
-        .catch(err => {
-          if (err.response && err.response.data) {
-            ToastStore.error(err.response.data.message);
-            if(err.response.data.message==='User session expired'){
-              self.signOut()
-              self.props.history.push('/login');
+          .then(res => {
+          })
+          .catch(err => {
+            if (err.response && err.response.data) {
+              ToastStore.error(err.response.data.message);
+              if (err.response.data.message === 'User session expired') {
+                self.signOut()
+                self.props.history.push('/login');
+              }
             }
-          }
-        });
+          });
+      }
     }
   }
   render() {
-    return (
+    return this.props.location.pathname === '/' ? null : (
       <div className="app">
         <ToastContainer store={ToastStore} />
         <AppHeader fixed>

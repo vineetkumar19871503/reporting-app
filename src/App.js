@@ -13,6 +13,27 @@ const DefaultLayout = Loadable({
 });
 
 // Pages
+
+const Home = Loadable({
+  loader: () => import('./components/Home/HomeComponent'),
+  loading
+});
+
+const Services = Loadable({
+  loader: () => import('./components/Services/ServicesComponent'),
+  loading
+});
+
+const ContactUs = Loadable({
+  loader: () => import('./components/ContactUs/ContactUsComponent'),
+  loading
+});
+
+const BSNLConnection = Loadable({
+  loader: () => import('./components/BSNLConnection/BSNLConnectionComponent'),
+  loading
+});
+
 const Login = Loadable({
   loader: () => import('./views/Pages/Login'),
   loading
@@ -49,6 +70,10 @@ class App extends Component {
         <AjaxLoader />
         <BrowserRouter>
           <Switch>
+            <Route exact path="/home" name="Home" component={Home} />
+            <Route exact path="/services" name="Services" component={Services} />
+            <Route exact path="/contact-us" name="Contact Us" component={ContactUs} />
+            <Route exact path="/new-bsnl-connection" name="BSNL Connection" component={BSNLConnection} />
             <Route exact path="/login" name="Login Page" component={Login} />
             <Route exact path="/register" name="Register Page" component={Register} />
             <Route exact path="/404" name="Page 404" component={Page404} />

@@ -1,0 +1,29 @@
+.main {
+  background-color: #fff;
+  height:100%;
+  width:100%;
+  display:inline-block;
+}
+
+ul {
+  list-style-type: none;
+}
+
+ul li {
+  display: inline-block;
+  margin-top:10px;
+}
+
+ul li a{
+  padding: 10px;
+  text-align: center;
+  font-size:12px;
+}
+
+.home-logo{
+  height: 30px;
+}
+
+.carousel-inner  {
+  text-align: center;
+}
