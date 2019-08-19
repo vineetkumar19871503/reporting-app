@@ -9,13 +9,14 @@ import {
 } from 'reactstrap';
 
 export default class ServicesComponent extends Component {
-    constructor(props) {
-        super(props);
+    componentDidMount() {
+        document.title = "SENSA NETWORKING - SERVICES";
     }
+    
     render() {
         return (
             <div className="main">
-                <Header />
+                <Header activeClass='service'/>
                 <div>
                     <Container>
                         <CardBody>

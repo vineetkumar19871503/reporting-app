@@ -5,6 +5,7 @@
   display:inline-block;
 }
 
+/*
 ul {
   list-style-type: none;
 }
@@ -23,7 +24,7 @@ ul li a{
 .home-logo{
   height: 30px;
 }
-
+*/
 .carousel-inner  {
   text-align: center;
 }

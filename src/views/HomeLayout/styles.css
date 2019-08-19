@@ -1,18 +1,51 @@
-ul {
+.home .menus ul {
     list-style-type: none;
+    margin: 0 !important;
+    background: rgba(246,196,2,1);
 }
-
-ul li {
-    display: inline-block;
-    margin-top:10px;
-}
-
-ul li a{
+.home .menus ul li {
+    display: inline;
     padding: 10px;
-    text-align: center;
-    font-size:12px;
+    margin-top:0px !important;
 }
+
+.activeLink{
+    background: rgba(75,73,73,1);
+}
+.home .menus ul li.activeLink  a{
+    color: white;
+}
+
+.home .menus ul li:hover{
+    background: rgba(75,73,73,1);
+    cursor: pointer;
+}
+.home .menus ul li:hover a{
+    color: white;
+    text-decoration: none;
+}
+
+.menus {
+    background: rgba(246,196,2,1);
+    padding: 10px !important;
+}
+
+.home .menus ul li a{
+    color: rgba(75,73,73,1);
+}
+
 
 .home-logo{
-    height: 30px;
+    height: 80px;
+}
+
+.inlineDisplay {
+    display: inline-block;
+}
+
+.pad20 {
+    padding: 20px;
+}
+.marginleft35 {
+    margin-left: 35px;
 }

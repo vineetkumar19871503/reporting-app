@@ -153,7 +153,7 @@ export default class BSNLConnectionComponent extends Component {
     render() {
         return (
             <div className="main">
-                <Header />
+                <Header activeClass='bsnl' />
                 <div>
                     <Container>
                         <CardBody>
@@ -239,7 +239,7 @@ export default class BSNLConnectionComponent extends Component {
                                     </CardBody>
                                     <CardFooter>
                                         <Button type="submit" size="sm" color="primary">Submit</Button>&nbsp;
-                <Button type="button" onClick={this.resetForm} size="sm" color="danger">Reset</Button>
+                                        <Button type="button" onClick={this.resetForm} size="sm" color="danger">Reset</Button>
                                     </CardFooter>
                                 </Form>
                             </Card>

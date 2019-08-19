@@ -3,21 +3,6 @@ import React, { Component } from 'react';
 import Header from '../../views/HomeLayout/Header';
 import './styles.css';
 import {
-    Container,
-    Button,
-    Card,
-    CardBody,
-    CardFooter,
-    CardHeader,
-    Col,
-    Form,
-    FormGroup,
-    Input,
-    Label,
-    Row,
-    Modal,
-    ModalHeader,
-    ModalBody,
     Carousel,
     CarouselItem,
     CarouselControl,
@@ -34,7 +19,8 @@ const items = [
         src: '/assets/img/slider/2.jpg',
         altText: '',
         caption: ''
-    },
+    }
+    /*,
     {
         src: '/assets/img/slider/3.jpg',
         altText: '',
@@ -60,6 +46,7 @@ const items = [
         altText: '',
         caption: ''
     }
+    */
 ];
 export default class HomeComponent extends Component {
     constructor(props) {
@@ -71,6 +58,11 @@ export default class HomeComponent extends Component {
         this.onExiting = this.onExiting.bind(this);
         this.onExited = this.onExited.bind(this);
     }
+
+    componentDidMount() {
+        document.title = "SENSA NETWORKING - HOME";
+    }
+
     onExiting() {
         this.animating = true;
     }
@@ -113,7 +105,7 @@ export default class HomeComponent extends Component {
         });
         return (
             <div className="main">
-                <Header />
+                <Header activeClass="home" />
                 <Carousel
                     activeIndex={activeIndex}
                     next={this.next}

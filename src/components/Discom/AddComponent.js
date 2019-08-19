@@ -32,6 +32,8 @@ class AddComponent extends React.Component {
       'is_update': false,
       'show_modal': false,
       'update_index': 0,
+      'disable_amount': false,
+      'disable_amount_edit': false,
       'search': {
         'start_date': null,
         'end_date': null,
@@ -87,7 +89,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
+              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.fillEditForm(row); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -99,6 +101,26 @@ class AddComponent extends React.Component {
     this.searchData = this.searchData.bind(this);
     this.updateRecord = this.updateRecord.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
+    this.fillEditForm = this.fillEditForm.bind(this);
+    this.onSellStatusChange = this.onSellStatusChange.bind(this);
+  }
+
+  fillEditForm(data) {
+    let shouldDisableAmount = false;
+    const amount = data.original.amount;
+    if (typeof amount !== 'string' && typeof amount !== 'number') {
+      data.original.amount = ""
+    };
+    if (data.original.sell_status === 'Return') {
+      shouldDisableAmount = true;
+    }
+    this.setState({
+      'update_index': data.index,
+      'edit_fields': data.original,
+      'disable_amount_edit': shouldDisableAmount
+    }, () => {
+      this.toggleModal();
+    });
   }
 
   toggleModal() {
@@ -180,13 +202,25 @@ class AddComponent extends React.Component {
     formIsValid = this._validateField('number', 'quantity', formIsValid);
     formIsValid = this._validateField('required', 'card_type', formIsValid);
     this.state.is_update ? this.setState({ 'update_errors': this.errors }) : this.setState({ 'errors': this.errors });
+    console.log(formIsValid);
     if (formIsValid) {
       cb();
     }
   }
 
   _validateField(type = 'required', name, formIsValid) {
-    let fields = this.state.is_update ? this.state.edit_fields : this.state.fields;
+    let fields;
+    if (this.state.is_update) {
+      if (name === 'amount' && this.state.disable_amount_edit) {
+        return true;
+      }
+      fields = this.state.edit_fields;
+    } else {
+      if (name === 'amount' && this.state.disable_amount) {
+        return true;
+      }
+      fields = this.state.fields;
+    }
     let isFieldValid = formIsValid;
     if (this.errors[name]) {
       return;
@@ -291,25 +325,25 @@ class AddComponent extends React.Component {
             ToastStore.error(res.data.message);
           } else {
             self.showLoader(false);
-          if (res.data.is_err) {
-            ToastStore.error(res.data.message);
-          } else {
-            const st = self.state;
-            const records = st.records;
-            const newRecords = [];
-            let counter = 0;
-            for (let record of records) {
-              if (counter === st.update_index) {
-                record = fields;
+            if (res.data.is_err) {
+              ToastStore.error(res.data.message);
+            } else {
+              const st = self.state;
+              const records = st.records;
+              const newRecords = [];
+              let counter = 0;
+              for (let record of records) {
+                if (counter === st.update_index) {
+                  record = fields;
+                }
+                const newRecord = { ...record };
+                newRecords.push(newRecord);
+                counter++;
               }
-              const newRecord = { ...record };
-              newRecords.push(newRecord);
-              counter++;
+              self.setState({ records: newRecords });
+              self.toggleModal();
+              ToastStore.success(res.data.message);
             }
-            self.setState({ records: newRecords });
-            self.toggleModal();
-            ToastStore.success(res.data.message);
-          }
           }
         })
         .catch(err => {
@@ -321,6 +355,23 @@ class AddComponent extends React.Component {
           ToastStore.error(errorMsg);
         });
     });
+  }
+
+  onSellStatusChange(status, type) {
+    let fields;
+    if (type === 'edit') {
+      fields = Object.assign({}, this.state.edit_fields);
+    } else {
+      fields = Object.assign({}, this.state.fields);
+    }
+
+    fields.amount = '';
+    const shouldDisable = status === "Return";
+    if (type === 'edit') {
+      this.setState({ "disable_amount_edit": shouldDisable, "edit_fields": fields });
+    } else {
+      this.setState({ "disable_amount": shouldDisable, "fields": fields });
+    }
   }
 
   render() {
@@ -345,15 +396,26 @@ class AddComponent extends React.Component {
                   </Col>
                   <Col md="4">
                     <FormGroup>
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input type="text" id="amount" value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
-                      <span className="form-err">{this.state.errors["amount"]}</span>
+                      <Label htmlFor="sell_status">Sell/Return</Label>
+                      <Input type="select" id="sell_status" value={this.state.fields.sell_status} onChange={e => { this.changeInput('sell_status', e.target.value); this.onSellStatusChange(e.target.value); }}>
+                        <option value="Sold">Sold</option>
+                        <option value="Return">Return</option>
+                      </Input>
+                      <span className="form-err">{this.state.errors["sell_status"]}</span>
                     </FormGroup>
                   </Col>
                   <Col md="4">
                     <FormGroup>
                       <Label htmlFor="bulb_type">Bulb Type</Label>
-                      <Input type="text" id="bulb_type" value={this.state.fields.bulb_type} onChange={e => this.changeInput('bulb_type', e.target.value)} placeholder="Enter Bulb Type" />
+                      <Input type="select" id="bulb_type" value={this.state.fields.bulb_type} onChange={e => this.changeInput('bulb_type', e.target.value)}>
+                        <option value=""> -- Select Bulb Type --</option>
+                        <option value="0.5W">0.5W</option>
+                        <option value="9W">9W</option>
+                        <option value="12W">12W</option>
+                        <option value="18WT">18WT</option>
+                        <option value="22WT">22WT</option>
+                        <option value="StaiLight">StaiLight</option>
+                      </Input>
                       <span className="form-err">{this.state.errors["bulb_type"]}</span>
                     </FormGroup>
                   </Col>
@@ -361,12 +423,9 @@ class AddComponent extends React.Component {
                 <Row>
                   <Col md="4">
                     <FormGroup>
-                      <Label htmlFor="sell_status">Sell/Return</Label>
-                      <Input type="select" id="sell_status" value={this.state.fields.sell_status} onChange={e => this.changeInput('sell_status', e.target.value)}>
-                        <option value="Return">Return</option>
-                        <option value="Sold">Sold</option>
-                      </Input>
-                      <span className="form-err">{this.state.errors["sell_status"]}</span>
+                      <Label htmlFor="amount">Amount</Label>
+                      <Input type="text" id="amount" disabled={this.state.disable_amount} value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
+                      <span className="form-err">{this.state.errors["amount"]}</span>
                     </FormGroup>
                   </Col>
                   <Col md="4">
@@ -376,7 +435,7 @@ class AddComponent extends React.Component {
                       <span className="form-err">{this.state.errors["quantity"]}</span>
                     </FormGroup>
                   </Col>
-                  <Col md="4">
+                  {/* <Col md="4">
                     <FormGroup>
                       <Label htmlFor="card_type">Debit/Credit</Label>
                       <Input type="select" id="card_type" value={this.state.fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
@@ -385,7 +444,7 @@ class AddComponent extends React.Component {
                       </Input>
                       <span className="form-err">{this.state.errors["card_type"]}</span>
                     </FormGroup>
-                  </Col>
+                  </Col> */}
                 </Row>
               </CardBody>
               <CardFooter>
@@ -400,7 +459,7 @@ class AddComponent extends React.Component {
             <CardBody>
               <Form onSubmit={this.searchData}>
                 <Row>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="start_date">From Date</Label><br />
                       <DatePicker
@@ -411,7 +470,7 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="end_date">To Date</Label><br />
                       <DatePicker
@@ -422,17 +481,17 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="search_sell_status">Sell/Return</Label>
                       <Input type="select" id="search_sell_status" value={this.state.fields.search_sell_status} onChange={e => this.changeInput('search_sell_status', e.target.value, 'search')}>
                         <option value="">All</option>
-                        <option value="Return">Return</option>
                         <option value="Sold">Sold</option>
+                        <option value="Return">Return</option>
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  {/* <Col md="3">
                     <FormGroup>
                       <Label htmlFor="search_card_type">Debit/Credit</Label>
                       <Input type="select" id="search_card_type" value={this.state.fields.search_card_type} onChange={e => this.changeInput('search_card_type', e.target.value, 'search')}>
@@ -441,13 +500,21 @@ class AddComponent extends React.Component {
                         <option value="Credit">Credit</option>
                       </Input>
                     </FormGroup>
-                  </Col>
+                  </Col> */}
                 </Row>
                 <Row>
                   <Col md="9">
                     <FormGroup>
                       <Label htmlFor="search_bulb_type">Bulb Type</Label>
-                      <Input type="text" id="search_bulb_type" value={this.state.search.search_bulb_type} onChange={e => this.changeInput('search_bulb_type', e.target.value, 'search')} placeholder="Enter Bulb Type" />
+                      <Input type="select" id="search_bulb_type" value={this.state.search.search_bulb_type} onChange={e => this.changeInput('search_bulb_type', e.target.value, 'search')}>
+                        <option value=""> -- Select Bulb Type --</option>
+                        <option value="0.5W">0.5W</option>
+                        <option value="9W">9W</option>
+                        <option value="12W">12W</option>
+                        <option value="18WT">18WT</option>
+                        <option value="22WT">22WT</option>
+                        <option value="StaiLight">StaiLight</option>
+                      </Input>
                     </FormGroup>
                   </Col>
                   <Col md="3">
@@ -487,7 +554,7 @@ class AddComponent extends React.Component {
                     <Col md="6">
                       <FormGroup>
                         <Label htmlFor="amount">Amount</Label>
-                        <Input type="text" id="amount" value={this.state.edit_fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
+                        <Input type="text" id="amount" disabled={this.state.disable_amount_edit} value={this.state.edit_fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
                         <span className="form-err">{this.state.update_errors["amount"]}</span>
                       </FormGroup>
                     </Col>
@@ -496,16 +563,24 @@ class AddComponent extends React.Component {
                     <Col md="6">
                       <FormGroup>
                         <Label htmlFor="bulb_type">Bulb Type</Label>
-                        <Input type="text" id="bulb_type" value={this.state.edit_fields.bulb_type} onChange={e => this.changeInput('bulb_type', e.target.value)} placeholder="Enter Bulb Type" />
+                        <Input type="select" id="bulb_type" value={this.state.edit_fields.bulb_type} onChange={e => this.changeInput('bulb_type', e.target.value)}>
+                          <option value=""> -- Select Bulb Type --</option>
+                          <option value="0.5W">0.5W</option>
+                          <option value="9W">9W</option>
+                          <option value="12W">12W</option>
+                          <option value="18WT">18WT</option>
+                          <option value="22WT">22WT</option>
+                          <option value="StaiLight">StaiLight</option>
+                        </Input>
                         <span className="form-err">{this.state.update_errors["bulb_type"]}</span>
                       </FormGroup>
                     </Col>
                     <Col md="6">
                       <FormGroup>
                         <Label htmlFor="sell_status">Sell/Return</Label>
-                        <Input type="select" id="sell_status" value={this.state.edit_fields.sell_status} onChange={e => this.changeInput('sell_status', e.target.value)}>
-                          <option value="Return">Return</option>
+                        <Input type="select" id="sell_status" value={this.state.edit_fields.sell_status} onChange={e => { this.changeInput('sell_status', e.target.value); this.onSellStatusChange(e.target.value, 'edit'); }}>
                           <option value="Sold">Sold</option>
+                          <option value="Return">Return</option>
                         </Input>
                         <span className="form-err">{this.state.update_errors["sell_status"]}</span>
                       </FormGroup>
@@ -519,7 +594,7 @@ class AddComponent extends React.Component {
                         <span className="form-err">{this.state.update_errors["quantity"]}</span>
                       </FormGroup>
                     </Col>
-                    <Col md="6">
+                    {/* <Col md="6">
                       <FormGroup>
                         <Label htmlFor="card_type">Debit/Credit</Label>
                         <Input type="select" id="card_type" value={this.state.edit_fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
@@ -528,7 +603,7 @@ class AddComponent extends React.Component {
                         </Input>
                         <span className="form-err">{this.state.update_errors["card_type"]}</span>
                       </FormGroup>
-                    </Col>
+                    </Col> */}
                   </Row>
                 </CardBody>
                 <CardFooter>
