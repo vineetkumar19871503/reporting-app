@@ -131,7 +131,7 @@ class AddComponent extends React.Component {
 
   componentDidMount() {
     const self = this;
-    document.title = "Discom - Add";
+    document.title = "Discom LED - Add";
     self.getRecords();
   }
 
@@ -381,7 +381,7 @@ class AddComponent extends React.Component {
           <Card>
             <ToastContainer store={ToastStore} />
             <CardHeader>
-              <strong>Discom - Add</strong>
+              <strong>Discom LED - Add</strong>
             </CardHeader>
             <Form onSubmit={this.saveFormData}>
               <CardBody>

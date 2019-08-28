@@ -35,18 +35,23 @@ class AddComponent extends React.Component {
       'search': {
         'start_date': null,
         'end_date': null,
-        'search_card_type': ''
+        'search_card_type': '',
+        'search_bank_name': ''
       },
       'records': [],
       'edit_fields': {
         'date': moment().format('DD/MM/YYYY'),
         'amount': '',
-        'card_type': 'Debit'
+        'card_type': 'Debit',
+        'bank_name': '',
+        'description': ''
       },
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'amount': '',
-        'card_type': 'Debit'
+        'card_type': 'Debit',
+        'bank_name': '',
+        'description': ''
       },
       'errors': {},
       'update_errors': {},
@@ -62,6 +67,14 @@ class AddComponent extends React.Component {
         {
           'Header': 'Amount',
           'accessor': 'amount'
+        },
+        {
+          'Header': 'Bank Name',
+          'accessor': 'bank_name'
+        },
+        {
+          'Header': 'Description',
+          'accessor': 'description'
         },
         {
           'Header': 'Actions',
@@ -110,7 +123,9 @@ class AddComponent extends React.Component {
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'amount': '',
-        'card_type': 'Debit'
+        'card_type': 'Debit',
+        'bank_name': '',
+        'description': ''
       }
     });
   }
@@ -150,6 +165,8 @@ class AddComponent extends React.Component {
     formIsValid = this._validateField('required', 'amount', formIsValid);
     formIsValid = this._validateField('number', 'amount', formIsValid);
     formIsValid = this._validateField('required', 'card_type', formIsValid);
+    formIsValid = this._validateField('required', 'bank_name', formIsValid);
+    formIsValid = this._validateField('required', 'description', formIsValid);
     this.state.is_update ? this.setState({ 'update_errors': this.errors }) : this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
@@ -225,7 +242,8 @@ class AddComponent extends React.Component {
       'search': {
         'start_date': null,
         'end_date': null,
-        'search_card_type': ''
+        'search_card_type': '',
+        'search_bank_name': ''
       }
     });
     this.getRecords();
@@ -309,13 +327,6 @@ class AddComponent extends React.Component {
                   </Col>
                   <Col md="4">
                     <FormGroup>
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input type="text" id="amount" value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
-                      <span className="form-err">{this.state.errors["amount"]}</span>
-                    </FormGroup>
-                  </Col>
-                  <Col md="4">
-                    <FormGroup>
                       <Label htmlFor="card_type">Debit/Credit</Label>
                       <Input type="select" id="card_type" value={this.state.fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
                         <option value="Debit">Debit</option>
@@ -323,6 +334,31 @@ class AddComponent extends React.Component {
                       </Input>
                       <span className="form-err">{this.state.errors["card_type"]}</span>
                     </FormGroup>
+                  </Col>
+                  <Col md="4">
+                    <FormGroup>
+                      <Label htmlFor="amount">Amount</Label>
+                      <Input type="text" id="amount" value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
+                      <span className="form-err">{this.state.errors["amount"]}</span>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md="6">
+                    <Label htmlFor="bank_name">Bank Name</Label>
+                    <Input type="select" id="bank_name" value={this.state.fields.bank_name} onChange={e => this.changeInput('bank_name', e.target.value)}>
+                      <option value="">-- Select Bank Name --</option>
+                      <option value="SBI">SBI</option>
+                      <option value="IndusInd Bank">IndusInd Bank</option>
+                      <option value="Bank of Baroda">Bank of Baroda</option>
+                      <option value="Cash">Cash</option>
+                    </Input>
+                    <span className="form-err">{this.state.errors["bank_name"]}</span>
+                  </Col>
+                  <Col md="6">
+                    <Label htmlFor="description">Description</Label>
+                    <Input type="textarea" id="description" value={this.state.fields.description} onChange={e => this.changeInput('description', e.target.value)} />
+                    <span className="form-err">{this.state.errors["description"]}</span>
                   </Col>
                 </Row>
               </CardBody>
@@ -338,7 +374,7 @@ class AddComponent extends React.Component {
             <CardBody>
               <Form onSubmit={this.searchData}>
                 <Row>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="start_date">From Date</Label><br />
                       <DatePicker
@@ -349,7 +385,7 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="end_date">To Date</Label><br />
                       <DatePicker
@@ -360,13 +396,27 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="search_card_type">Debit/Credit</Label>
-                      <Input type="select" id="search_card_type" value={this.state.fields.search_card_type} onChange={e => this.changeInput('search_card_type', e.target.value, 'search')}>
+                      <Input type="select" id="search_card_type" value={this.state.search.search_card_type} onChange={e => this.changeInput('search_card_type', e.target.value, 'search')}>
                         <option value="">All</option>
                         <option value="Debit">Debit</option>
                         <option value="Credit">Credit</option>
+                      </Input>
+                    </FormGroup>
+                  </Col>
+                  </Row>
+                  <Row>
+                  <Col md="9">
+                    <FormGroup>
+                      <Label htmlFor="search_bank_name">Bank Name</Label>
+                      <Input type="select" id="search_bank_name" value={this.state.search.search_bank_name} onChange={e => this.changeInput('search_bank_name', e.target.value, 'search')}>
+                      <option value="">All</option>
+                      <option value="SBI">SBI</option>
+                      <option value="IndusInd Bank">IndusInd Bank</option>
+                      <option value="Bank of Baroda">Bank of Baroda</option>
+                      <option value="Cash">Cash</option>
                       </Input>
                     </FormGroup>
                   </Col>
@@ -421,6 +471,24 @@ class AddComponent extends React.Component {
                         <span className="form-err">{this.state.update_errors["card_type"]}</span>
                       </FormGroup>
                     </Col>
+                    <Col md="12">
+                      <Label htmlFor="bank_name">Bank Name</Label>
+                      <Input type="select" id="bank_name" value={this.state.edit_fields.bank_name} onChange={e => this.changeInput('bank_name', e.target.value)}>
+                        <option value="">-- Select Bank Name --</option>
+                        <option value="SBI">SBI</option>
+                        <option value="IndusInd Bank">IndusInd Bank</option>
+                        <option value="Bank of Baroda">Bank of Baroda</option>
+                        <option value="Cash">Cash</option>
+                      </Input>
+                      <span className="form-err">{this.state.update_errors["bank_name"]}</span>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="12">
+                      <Label htmlFor="description">Description</Label>
+                      <Input type="textarea" id="description" value={this.state.edit_fields.description} onChange={e => this.changeInput('description', e.target.value)} />
+                      <span className="form-err">{this.state.update_errors["description"]}</span>
+                    </Col>
                   </Row>
                 </CardBody>
                 <CardFooter>
@@ -431,7 +499,6 @@ class AddComponent extends React.Component {
             </ModalBody>
           </Modal>
           {/* ===================== Edit Modal Start =================== */}
-
         </Col>
       </Row>
     </div>;

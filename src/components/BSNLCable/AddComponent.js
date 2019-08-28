@@ -86,6 +86,10 @@ class AddComponent extends React.Component {
           'accessor': 'display_reminder_date'
         },
         {
+          'Header': 'Source',
+          'accessor': 'source'
+        },
+        {
           'Header': 'Status',
           'accessor': 'status'
         },

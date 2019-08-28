@@ -10,7 +10,8 @@ const EditUserComponent = React.lazy(() => import('./components/users/EditCompon
 
 const AddBSNLCableComponent = React.lazy(() => import('./components/BSNLCable/AddComponent'));
 const AddDiscomPoleComponent = React.lazy(() => import('./components/DiscomPole/AddComponent'));
-const AddDiscomComponent = React.lazy(() => import('./components/Discom/AddComponent'));
+const AddDiscomLEDComponent = React.lazy(() => import('./components/Discom/AddComponent'));
+const AddDiscomWalletComponent = React.lazy(() => import('./components/DiscomWallet/AddComponent'));
 const AddHighCourtComponent = React.lazy(() => import('./components/HighCourt/AddComponent'));
 const AddMachiyaComponent = React.lazy(() => import('./components/Machiya/AddComponent'));
 const AddYavukushComponent = React.lazy(() => import('./components/Yavukush/AddComponent'));
@@ -26,7 +27,8 @@ const routes = [
   { path: '/users/edit/:id', name: 'Edit User', component: EditUserComponent },
   { path: '/bsnl-cable', name: 'BSNL Cable', component: AddBSNLCableComponent },
   { path: '/discom-pole', name: 'Discom Pole', component: AddDiscomPoleComponent },
-  { path: '/discom', name: 'Discom', component: AddDiscomComponent },
+  { path: '/discom-led', name: 'Discom LED', component: AddDiscomLEDComponent },
+  { path: '/discom-wallet', name: 'Discom Wallet', component: AddDiscomWalletComponent },
   { path: '/high-court', name: 'High Court', component: AddHighCourtComponent },
   { path: '/machiya', name: 'Machiya', component: AddMachiyaComponent },
   { path: '/yavukush', name: 'Yavukush', component: AddYavukushComponent },

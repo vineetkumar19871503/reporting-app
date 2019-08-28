@@ -102,7 +102,7 @@ class AddComponent extends React.Component {
 
   componentDidMount() {
     const self = this;
-    document.title = "Machiya - Add";
+    document.title = "Discom Wallet - Add";
     self.getRecords();
   }
 
@@ -144,7 +144,7 @@ class AddComponent extends React.Component {
       p.params = params;
     }
     self.showLoader();
-    axios.get(config.apiUrl + 'machiya/list', p)
+    axios.get(config.apiUrl + 'discomwallet/list', p)
       .then(res => {
         self.showLoader(false);
         const records = res.data.data;
@@ -159,7 +159,6 @@ class AddComponent extends React.Component {
         ToastStore.error(errorMsg);
       });
   }
-
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
@@ -173,7 +172,6 @@ class AddComponent extends React.Component {
       cb();
     }
   }
-
   _validateField(type = 'required', name, formIsValid) {
     let fields = this.state.is_update ? this.state.edit_fields : this.state.fields;
     let isFieldValid = formIsValid;
@@ -209,7 +207,7 @@ class AddComponent extends React.Component {
       const fields = self.state.fields;
       fields.date = moment().format('MM/DD/YYYY');
       axios.post(
-        config.apiUrl + 'machiya/add',
+        config.apiUrl + 'discomwallet/add',
         fields,
         {
           'headers': {
@@ -240,7 +238,6 @@ class AddComponent extends React.Component {
   }
 
   clearSearch() {
-    this.getRecords();
     this.setState({
       'search': {
         'start_date': null,
@@ -249,7 +246,7 @@ class AddComponent extends React.Component {
         'search_bank_name': ''
       }
     });
-    
+    this.getRecords();
   }
 
   searchData(e) {
@@ -267,7 +264,7 @@ class AddComponent extends React.Component {
       fields.date = moment().format('MM/DD/YYYY');
       fields.display_date = moment(fields.date).format("DD/MM/YYYY");
       axios.post(
-        config.apiUrl + 'machiya/edit',
+        config.apiUrl + 'discomwallet/edit',
         fields,
         {
           'headers': {
@@ -315,7 +312,7 @@ class AddComponent extends React.Component {
           <Card>
             <ToastContainer store={ToastStore} />
             <CardHeader>
-              <strong>Machiya - Add</strong>
+              <strong>Discom Wallet - Add</strong>
             </CardHeader>
             <Form onSubmit={this.saveFormData}>
               <CardBody>
@@ -330,19 +327,19 @@ class AddComponent extends React.Component {
                   </Col>
                   <Col md="4">
                     <FormGroup>
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input type="text" id="amount" value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
-                      <span className="form-err">{this.state.errors["amount"]}</span>
-                    </FormGroup>
-                  </Col>
-                  <Col md="4">
-                    <FormGroup>
                       <Label htmlFor="card_type">Debit/Credit</Label>
                       <Input type="select" id="card_type" value={this.state.fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
                         <option value="Debit">Debit</option>
                         <option value="Credit">Credit</option>
                       </Input>
                       <span className="form-err">{this.state.errors["card_type"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="4">
+                    <FormGroup>
+                      <Label htmlFor="amount">Amount</Label>
+                      <Input type="text" id="amount" value={this.state.fields.amount} onChange={e => this.changeInput('amount', e.target.value)} placeholder="Enter Amount" />
+                      <span className="form-err">{this.state.errors["amount"]}</span>
                     </FormGroup>
                   </Col>
                 </Row>
@@ -409,17 +406,17 @@ class AddComponent extends React.Component {
                       </Input>
                     </FormGroup>
                   </Col>
-                </Row>
-                <Row>
+                  </Row>
+                  <Row>
                   <Col md="9">
                     <FormGroup>
                       <Label htmlFor="search_bank_name">Bank Name</Label>
                       <Input type="select" id="search_bank_name" value={this.state.search.search_bank_name} onChange={e => this.changeInput('search_bank_name', e.target.value, 'search')}>
-                        <option value="">All</option>
-                        <option value="SBI">SBI</option>
-                        <option value="IndusInd Bank">IndusInd Bank</option>
-                        <option value="Bank of Baroda">Bank of Baroda</option>
-                        <option value="Cash">Cash</option>
+                      <option value="">All</option>
+                      <option value="SBI">SBI</option>
+                      <option value="IndusInd Bank">IndusInd Bank</option>
+                      <option value="Bank of Baroda">Bank of Baroda</option>
+                      <option value="Cash">Cash</option>
                       </Input>
                     </FormGroup>
                   </Col>
@@ -485,6 +482,8 @@ class AddComponent extends React.Component {
                       </Input>
                       <span className="form-err">{this.state.update_errors["bank_name"]}</span>
                     </Col>
+                  </Row>
+                  <Row>
                     <Col md="12">
                       <Label htmlFor="description">Description</Label>
                       <Input type="textarea" id="description" value={this.state.edit_fields.description} onChange={e => this.changeInput('description', e.target.value)} />
@@ -494,13 +493,12 @@ class AddComponent extends React.Component {
                 </CardBody>
                 <CardFooter>
                   <Button type="submit" size="sm" color="primary">Update</Button>&nbsp;
-                  <Button type="button" onClick={this.toggleModal} size="sm" color="danger">Cancel</Button>
+                <Button type="button" onClick={this.toggleModal} size="sm" color="danger">Cancel</Button>
                 </CardFooter>
               </Form>
             </ModalBody>
           </Modal>
           {/* ===================== Edit Modal Start =================== */}
-
         </Col>
       </Row>
     </div>;

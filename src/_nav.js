@@ -37,8 +37,13 @@ export default {
       icon: 'icon-plus'
     },
     {
-      name: 'Discom',
-      url: '/discom',
+      name: 'Discom LED',
+      url: '/discom-led',
+      icon: 'icon-plus'
+    },
+    {
+      name: 'Discom Wallet',
+      url: '/discom-wallet',
       icon: 'icon-plus'
     },
     {
