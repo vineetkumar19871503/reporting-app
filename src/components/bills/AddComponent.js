@@ -168,7 +168,7 @@ class AddComponent extends React.Component {
     return t;
   }
   loadDummyImg() {
-    document.getElementById('dummyImg').setAttribute('src', 'https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg');
+    document.getElementById('dummyImg').setAttribute('src', 'http://sensanetworking.in/assets/img/logo.jpg');
   }
   printBill() {
     this.loadDummyImg();
@@ -414,7 +414,7 @@ const styles = {
     'height': '110px',
     'display': 'list-item',
     'margin': '0 auto',
-    'listStyleImage': 'url(https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg)',
+    'listStyleImage': 'url(http://sensanetworking.in/assets/img/logo.jpg)',
     'listStylePosition': 'inside'
   }
 }

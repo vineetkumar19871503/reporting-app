@@ -31,6 +31,8 @@ class AddComponent extends React.Component {
     this.state = {
       'is_update': false,
       'show_modal': false,
+      'is_edit_bank_disabled': false,
+      'is_bank_disabled': false,
       'update_index': 0,
       'search': {
         'start_date': null,
@@ -42,14 +44,14 @@ class AddComponent extends React.Component {
       'edit_fields': {
         'date': moment().format('DD/MM/YYYY'),
         'amount': '',
-        'card_type': 'Debit',
+        'card_type': '',
         'bank_name': '',
         'description': ''
       },
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'amount': '',
-        'card_type': 'Debit',
+        'card_type': '',
         'bank_name': '',
         'description': ''
       },
@@ -80,7 +82,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
+              <Col md="12"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original, 'is_edit_bank_disabled': row.original.card_type === 'Debit' }, () => { this.onCardTypeSelect(row.original.card_type, 'edit'); this.toggleModal(); }); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -92,6 +94,7 @@ class AddComponent extends React.Component {
     this.searchData = this.searchData.bind(this);
     this.updateRecord = this.updateRecord.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
+    this.onCardTypeSelect = this.onCardTypeSelect.bind(this);
   }
 
   toggleModal() {
@@ -123,7 +126,7 @@ class AddComponent extends React.Component {
       'fields': {
         'date': moment().format('DD/MM/YYYY'),
         'amount': '',
-        'card_type': 'Debit',
+        'card_type': '',
         'bank_name': '',
         'description': ''
       }
@@ -159,19 +162,40 @@ class AddComponent extends React.Component {
         ToastStore.error(errorMsg);
       });
   }
+
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
     formIsValid = this._validateField('required', 'amount', formIsValid);
     formIsValid = this._validateField('number', 'amount', formIsValid);
     formIsValid = this._validateField('required', 'card_type', formIsValid);
-    formIsValid = this._validateField('required', 'bank_name', formIsValid);
+    if ((this.state.is_update && !this.state.is_edit_bank_disabled) || (!this.state.is_update && !this.state.is_bank_disabled)) {
+      formIsValid = this._validateField('required', 'bank_name', formIsValid);
+    }
     formIsValid = this._validateField('required', 'description', formIsValid);
     this.state.is_update ? this.setState({ 'update_errors': this.errors }) : this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
     }
   }
+
+  onCardTypeSelect(value, formType = "add") {
+    let isDisabled = value === "Debit";
+    if (formType === "add") {
+      const formFields = this.state.fields;
+      if (isDisabled) {
+        formFields.bank_name = "";
+      }
+      this.setState({ "is_bank_disabled": isDisabled, "fields": formFields });
+    } else {
+      const formFields = this.state.edit_fields;
+      if (isDisabled) {
+        formFields.bank_name = "";
+      }
+      this.setState({ "is_edit_bank_disabled": isDisabled, "edit_fields": formFields });
+    }
+  }
+
   _validateField(type = 'required', name, formIsValid) {
     let fields = this.state.is_update ? this.state.edit_fields : this.state.fields;
     let isFieldValid = formIsValid;
@@ -206,6 +230,7 @@ class AddComponent extends React.Component {
       self.showLoader();
       const fields = self.state.fields;
       fields.date = moment().format('MM/DD/YYYY');
+      fields.created_by = self.props.user._id;
       axios.post(
         config.apiUrl + 'discomwallet/add',
         fields,
@@ -328,7 +353,8 @@ class AddComponent extends React.Component {
                   <Col md="4">
                     <FormGroup>
                       <Label htmlFor="card_type">Debit/Credit</Label>
-                      <Input type="select" id="card_type" value={this.state.fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
+                      <Input type="select" id="card_type" value={this.state.fields.card_type} onChange={e => { this.changeInput('card_type', e.target.value); this.onCardTypeSelect(e.target.value); }}>
+                        <option value="">-- Select Card Type --</option>
                         <option value="Debit">Debit</option>
                         <option value="Credit">Credit</option>
                       </Input>
@@ -346,7 +372,7 @@ class AddComponent extends React.Component {
                 <Row>
                   <Col md="6">
                     <Label htmlFor="bank_name">Bank Name</Label>
-                    <Input type="select" id="bank_name" value={this.state.fields.bank_name} onChange={e => this.changeInput('bank_name', e.target.value)}>
+                    <Input type="select" id="bank_name" disabled={this.state.is_bank_disabled} value={this.state.fields.bank_name} onChange={e => this.changeInput('bank_name', e.target.value)}>
                       <option value="">-- Select Bank Name --</option>
                       <option value="SBI">SBI</option>
                       <option value="IndusInd Bank">IndusInd Bank</option>
@@ -399,24 +425,24 @@ class AddComponent extends React.Component {
                   <Col md="4">
                     <FormGroup>
                       <Label htmlFor="search_card_type">Debit/Credit</Label>
-                      <Input type="select" id="search_card_type" value={this.state.search.search_card_type} onChange={e => this.changeInput('search_card_type', e.target.value, 'search')}>
+                      <Input type="select" id="search_card_type" value={this.state.search.search_card_type} onChange={e => { this.changeInput('search_card_type', e.target.value, 'search'); }}>
                         <option value="">All</option>
                         <option value="Debit">Debit</option>
                         <option value="Credit">Credit</option>
                       </Input>
                     </FormGroup>
                   </Col>
-                  </Row>
-                  <Row>
+                </Row>
+                <Row>
                   <Col md="9">
                     <FormGroup>
                       <Label htmlFor="search_bank_name">Bank Name</Label>
                       <Input type="select" id="search_bank_name" value={this.state.search.search_bank_name} onChange={e => this.changeInput('search_bank_name', e.target.value, 'search')}>
-                      <option value="">All</option>
-                      <option value="SBI">SBI</option>
-                      <option value="IndusInd Bank">IndusInd Bank</option>
-                      <option value="Bank of Baroda">Bank of Baroda</option>
-                      <option value="Cash">Cash</option>
+                        <option value="">All</option>
+                        <option value="SBI">SBI</option>
+                        <option value="IndusInd Bank">IndusInd Bank</option>
+                        <option value="Bank of Baroda">Bank of Baroda</option>
+                        <option value="Cash">Cash</option>
                       </Input>
                     </FormGroup>
                   </Col>
@@ -464,7 +490,8 @@ class AddComponent extends React.Component {
                     <Col md="12">
                       <FormGroup>
                         <Label htmlFor="card_type">Debit/Credit</Label>
-                        <Input type="select" id="card_type" value={this.state.edit_fields.card_type} onChange={e => this.changeInput('card_type', e.target.value)}>
+                        <Input type="select" id="card_type" value={this.state.edit_fields.card_type} onChange={e => { this.changeInput('card_type', e.target.value); this.onCardTypeSelect(e.target.value, 'edit'); }}>
+                          <option value="">-- Select Card Type --</option>
                           <option value="Debit">Debit</option>
                           <option value="Credit">Credit</option>
                         </Input>
@@ -473,7 +500,7 @@ class AddComponent extends React.Component {
                     </Col>
                     <Col md="12">
                       <Label htmlFor="bank_name">Bank Name</Label>
-                      <Input type="select" id="bank_name" value={this.state.edit_fields.bank_name} onChange={e => this.changeInput('bank_name', e.target.value)}>
+                      <Input type="select" id="bank_name" disabled={this.state.is_edit_bank_disabled} value={this.state.edit_fields.bank_name} onChange={e => this.changeInput('bank_name', e.target.value)}>
                         <option value="">-- Select Bank Name --</option>
                         <option value="SBI">SBI</option>
                         <option value="IndusInd Bank">IndusInd Bank</option>

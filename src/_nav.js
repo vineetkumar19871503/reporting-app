@@ -61,6 +61,11 @@ export default {
       url: '/yavukush',
       icon: 'icon-plus'
     },
+    {
+      name: 'General Receipt',
+      url: '/general-receipt',
+      icon: 'icon-plus'
+    },
     // {
     //   name: 'Users',
     //   url: '/users',

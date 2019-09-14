@@ -97,7 +97,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
+              <Col md="12"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -231,6 +231,7 @@ class AddComponent extends React.Component {
       const fields = Object.assign({}, self.state.fields);
       fields.reminder_date = moment(new Date(fields.reminder_date)).format("MM/DD/YYYY");
       fields.date = moment().format('MM/DD/YYYY');
+      fields.created_by = self.props.user._id;
       axios.post(
         config.apiUrl + 'bsnlcable/add',
         fields,

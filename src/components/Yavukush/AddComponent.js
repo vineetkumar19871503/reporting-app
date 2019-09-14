@@ -7,6 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 import { ToastContainer, ToastStore } from 'react-toasts';
+import ReactAutocomplete from 'react-autocomplete';
 import {
   Button,
   Card,
@@ -31,7 +32,10 @@ class AddComponent extends React.Component {
     this.state = {
       'is_update': false,
       'show_modal': false,
+      'shouldOpenAc': false,
+      'shouldOpenEditAc': false,
       'update_index': 0,
+      'entry_types': [],
       'search': {
         'start_date': null,
         'end_date': null,
@@ -80,7 +84,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
+              <Col md="12"><Button block size="sm" color="success" onClick={() => { this.setState({ 'update_index': row.index, 'edit_fields': row.original }, () => { this.toggleModal(); }); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -92,6 +96,8 @@ class AddComponent extends React.Component {
     this.searchData = this.searchData.bind(this);
     this.updateRecord = this.updateRecord.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
+    this.onEntryTypeChange = this.onEntryTypeChange.bind(this);
+    this.onEntryTypeSelect = this.onEntryTypeSelect.bind(this);
   }
 
   toggleModal() {
@@ -103,6 +109,7 @@ class AddComponent extends React.Component {
   componentDidMount() {
     document.title = "Yavukush - Add";
     this.getRecords();
+    this.getEntryTypes();
   }
 
   changeInput(field, value, inputType) {
@@ -115,6 +122,31 @@ class AddComponent extends React.Component {
       state['fields'][field] = value;
     }
     this.setState(state);
+  }
+
+  getEntryTypes(keyword) {
+    const self = this;
+    self.showLoader();
+    axios.get(config.apiUrl + 'yavukush/getentrytypes', {
+      headers: { 'Authorization': 'Bearer ' + self.props.user.token }
+    })
+      .then(res => {
+        self.showLoader(false);
+        const entry_types = res.data.data.map(dt => {
+          dt.value = dt.entry_type;
+          dt.name = dt.entry_type;
+          return dt;
+        });
+        self.setState({ 'entry_types': entry_types });
+      })
+      .catch(err => {
+        self.showLoader(false);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
+      });
   }
 
   resetForm() {
@@ -207,6 +239,7 @@ class AddComponent extends React.Component {
       self.showLoader();
       const fields = self.state.fields;
       fields.date = moment().format('MM/DD/YYYY');
+      fields.created_by = self.props.user._id;
       axios.post(
         config.apiUrl + 'yavukush/add',
         fields,
@@ -306,6 +339,45 @@ class AddComponent extends React.Component {
     });
   }
 
+  onEntryTypeChange(val, formType) {
+    const _s = Object.assign({}, this.state);
+    if (formType === "edit") {
+      let shouldOpenEditAc = false;
+      if (val.length >= 1) {
+        shouldOpenEditAc = true;
+      }
+      _s.edit_fields.entry_type = val;
+      _s.shouldOpenEditAc = shouldOpenEditAc;
+    } else {
+      let shouldOpenAc = false;
+      if (val.length >= 1) {
+        shouldOpenAc = true;
+      }
+      _s.fields.entry_type = val;
+      _s.shouldOpenAc = shouldOpenAc;
+    }
+    this.setState(_s);
+  }
+
+  onEntryTypeSelect(value, item, formType) {
+    const _s = Object.assign({}, this.state);
+    if (formType === "edit") {
+      _s.edit_fields.entry_type = value;
+      _s.edit_fields.amount = item.amount;
+      _s.edit_fields.card_type = item.card_type;
+      _s.edit_fields.description = item.description;
+      _s.shouldOpenAc = false;
+    } else {
+      _s.fields.entry_type = value;
+      _s.fields.amount = item.amount;
+      _s.fields.card_type = item.card_type;
+      _s.fields.description = item.description;
+      _s.shouldOpenAc = false;
+    }
+
+    this.setState(_s);
+  }
+
   render() {
     return <div className="animated fadeIn">
       <Row>
@@ -348,7 +420,30 @@ class AddComponent extends React.Component {
                   <Col md="6">
                     <FormGroup>
                       <Label htmlFor="entry_type">Entry Type</Label>
-                      <Input type="select" id="entry_type" value={this.state.fields.entry_type} onChange={e => this.changeInput('entry_type', e.target.value)}>
+                      <div className="custom-form-field">
+                        <ReactAutocomplete
+                          items={this.state.entry_types}
+                          inputProps={{ placeholder: 'Enter Entry Type' }}
+                          shouldItemRender={(item, value) => this.state.shouldOpenAc && item.entry_type.toLowerCase().indexOf(value.toLowerCase()) > -1}
+                          getItemValue={item => item.entry_type}
+                          renderItem={(item, highlighted) =>
+                            <div
+                              key={item._id}
+                              className="autocomplete-item"
+                              style={{ backgroundColor: highlighted ? '#eee' : '#fff' }}
+                            >
+                              {item.entry_type}
+                            </div>
+                          }
+                          value={this.state.fields.entry_type}
+                          onChange={e => this.onEntryTypeChange(e.target.value)}
+                          onSelect={(value, item) => this.onEntryTypeSelect(value, item)}
+                        />
+                      </div>
+
+
+
+                      {/* <Input type="select" id="entry_type" value={this.state.fields.entry_type} onChange={e => this.changeInput('entry_type', e.target.value)}>
                         <option value="">-- Select Entry Type --</option>
                         <option value="Machiya">Machiya</option>
                         <option value="High Court">High Court</option>
@@ -356,7 +451,7 @@ class AddComponent extends React.Component {
                         <option value="Discom Pole">Discom Pole</option>
                         <option value="Yavukush">Yavukush</option>
                         <option value="BSNL Cable">BSNL Cable</option>
-                      </Input>
+                      </Input> */}
                       <span className="form-err">{this.state.errors["entry_type"]}</span>
                     </FormGroup>
                   </Col>
@@ -483,7 +578,30 @@ class AddComponent extends React.Component {
                     <Col md="6">
                       <FormGroup>
                         <Label htmlFor="entry_type">Entry Type</Label>
-                        <Input type="select" id="entry_type" value={this.state.edit_fields.entry_type} onChange={e => this.changeInput('entry_type', e.target.value)}>
+
+
+                        <div className="custom-form-field">
+                          <ReactAutocomplete
+                            items={this.state.entry_types}
+                            inputProps={{ placeholder: 'Enter Entry Type' }}
+                            shouldItemRender={(item, value) => this.state.shouldOpenEditAc && item.entry_type.toLowerCase().indexOf(value.toLowerCase()) > -1}
+                            getItemValue={item => item.entry_type}
+                            renderItem={(item, highlighted) =>
+                              <div
+                                key={item._id}
+                                className="autocomplete-item"
+                                style={{ backgroundColor: highlighted ? '#eee' : '#fff' }}
+                              >
+                                {item.entry_type}
+                              </div>
+                            }
+                            value={this.state.edit_fields.entry_type}
+                            onChange={e => this.onEntryTypeChange(e.target.value, "edit")}
+                            onSelect={(value, item) => this.onEntryTypeSelect(value, item, "edit")}
+                          />
+                        </div>
+                        <span className="form-err">{this.state.update_errors["entry_type"]}</span>
+                        {/* <Input type="select" id="entry_type" value={this.state.edit_fields.entry_type} onChange={e => this.changeInput('entry_type', e.target.value)}>
                           <option value="">-- Select Entry Type --</option>
                           <option value="Machiya">Machiya</option>
                           <option value="High Court">High Court</option>
@@ -491,8 +609,8 @@ class AddComponent extends React.Component {
                           <option value="Discom Pole">Discom Pole</option>
                           <option value="Yavukush">Yavukush</option>
                           <option value="BSNL Cable">BSNL Cable</option>
-                        </Input>
-                        <span className="form-err">{this.state.update_errors["entry_type"]}</span>
+                        </Input> */}
+
                       </FormGroup>
                     </Col>
                   </Row>

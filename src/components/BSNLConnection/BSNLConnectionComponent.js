@@ -127,6 +127,7 @@ export default class BSNLConnectionComponent extends Component {
             fields.reminder_date = moment(new Date(fields.reminder_date)).format("MM/DD/YYYY");
             fields.date = moment().format('MM/DD/YYYY');
             fields.source = 'website';
+            fields.created_by = self.props.user._id;
             axios.post(
                 config.apiUrl + 'bsnlconnection/add',
                 fields

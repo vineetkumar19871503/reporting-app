@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
@@ -26,6 +27,7 @@ class ListComponent extends React.Component {
     super(props);
     this.searchBill = this.searchBill.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
+    this.updateToPaid = this.updateToPaid.bind(this);
     this.state = {
       'search': {
         'k_number': '',
@@ -57,22 +59,33 @@ class ListComponent extends React.Component {
           'accessor': 'receipt_number'
         },
         {
+          'Header': 'Bill Date',
+          'accessor': 'display_bill_submission_date'
+        },
+        {
           'Header': 'Actions',
+          'width': 180,
           Cell: row => (
-            <Row>
-              <Col md="6"><Button block size="sm" color="primary" onClick={() => this.printBill(row)}>Print</Button></Col>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => this.printReport(row)}>Report</Button></Col>
+            <Row className="px-3">
+              {!row.original.paid ?
+                <Col md="3" className="p-0 mx-1"><Button block size="sm" color="default" onClick={() => this.updateToPaid(row)}>Paid</Button></Col>
+                : null
+              }
+              <Col md="3" className="p-0 mx-1"><Button block size="sm" color="primary" onClick={() => this.printBill(row)}>Print</Button></Col>
+              <Col md="4" className="p-0 mx-1"><Button block size="sm" color="success" onClick={() => this.printReport(row)}>Report</Button></Col>
             </Row>
           )
         }
       ]
     };
   }
+
   changeInput(field, value) {
     const state = Object.assign({}, this.state);
     state['search'][field] = value;
     this.setState(state);
   }
+
   getTime(date) {
     date = new Date(date);
     var dt = date.getDate().toString();
@@ -81,23 +94,26 @@ class ListComponent extends React.Component {
     mn = mn.length === 1 ? "0" + mn : mn;
     return dt + '/' + mn + '/' + date.getFullYear() + ' ' + this.addZeroToTime(date.getHours()) + ':' + this.addZeroToTime(date.getMinutes()) + ':' + this.addZeroToTime(date.getSeconds())
   }
+
   addZeroToTime(t) {
     if (t < 10) {
       t = "0" + t;
     }
     return t;
   }
+
   printBill(data) {
-    const self = this;
-    self.setState({ printData: data.original });
-    self.showLoader();
-    self.loadDummyImg();
+    this.setState({ printData: data.original });
+    this.showLoader();
+    this.loadDummyImg();
   }
+
   printReport(data) {
     this.setState({ reportData: data.original }, () => {
       methods.print("reportContainer");
     });
   }
+
   searchBill(e) {
     e.preventDefault();
     const _s = Object.assign({}, this.state.search);
@@ -112,6 +128,7 @@ class ListComponent extends React.Component {
     }
     this.getBills(_s);
   }
+
   clearSearch() {
     const self = this;
     self.setState({
@@ -122,6 +139,7 @@ class ListComponent extends React.Component {
       }
     }, () => self.getBills());
   }
+
   componentDidMount() {
     const self = this;
     document.title = "Bills";
@@ -131,13 +149,16 @@ class ListComponent extends React.Component {
       methods.print("printContainer");
     });
   }
+
   loadDummyImg() {
-    document.getElementById('dummyImg').setAttribute('src', 'https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg');
+    document.getElementById('dummyImg').setAttribute('src', 'http://sensanetworking.in/assets/img/logo.jpg');
   }
+
   getAmount(amt) {
     amt = Math.round(amt);
     return methods.moneyToWords(amt);
   }
+
   getBills(params) {
     const self = this;
     const p = {
@@ -150,6 +171,10 @@ class ListComponent extends React.Component {
     axios.get(config.apiUrl + 'bills/list', p)
       .then(res => {
         self.showLoader(false);
+        res.data.data = res.data.data.map((bill) => {
+          bill.display_bill_submission_date = moment(bill.bill_submission_date).format('DD/MM/YYYY');
+          return bill;
+        });
         self.setState({ 'bills': res.data.data });
       })
       .catch(err => {
@@ -161,10 +186,51 @@ class ListComponent extends React.Component {
         ToastStore.error(errorMsg);
       });
   }
+
   showLoader(show = true) {
     const ldr = document.getElementById('ajax-loader-container');
     show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
   }
+
+  updateToPaid(data) {
+    const self = this,
+      rowIndex = data.index;
+    data = data.original;
+    self.showLoader();
+    const fields = {
+      "_id": data._id,
+      "paid": true
+    };
+    axios.post(
+      config.apiUrl + 'bills/update',
+      fields,
+      {
+        'headers': {
+          'Authorization': 'Bearer ' + self.props.user.token
+        }
+      }
+    )
+      .then(res => {
+        self.showLoader(false);
+        if (res.data.is_err) {
+          ToastStore.error(res.data.message);
+        } else {
+          const bills = self.state.bills;
+          bills[rowIndex].paid = true;
+          self.setState({ 'bills': bills });
+          ToastStore.success(res.data.message);
+        }
+      })
+      .catch(err => {
+        self.showLoader(false);
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        ToastStore.error(errorMsg);
+      });
+  }
+
   render() {
     const _p = this.state.printData;
     const _r = this.state.reportData;
@@ -184,7 +250,7 @@ class ListComponent extends React.Component {
                   <Col md="3">
                     <FormGroup>
                       <Label htmlFor="k_number">K Number</Label>
-                      <Input type="text" id="k_number" value={this.state.search.k_number} onChange={e => this.changeInput('k_number', e.target.value)} placeholder="Enter K Number" />
+                      <Input type="text" id="k_number" maxLength="12" value={this.state.search.k_number} onChange={e => this.changeInput('k_number', e.target.value)} placeholder="Enter K Number" />
                     </FormGroup>
                   </Col>
                   <Col md="3">
@@ -390,7 +456,7 @@ const styles = {
     'height': '110px',
     'display': 'list-item',
     'margin': '0 auto',
-    'listStyleImage': 'url(https://raw.githubusercontent.com/vineetkumar19871503/reporting-app/master/public/assets/img/logo.jpg)',
+    'listStyleImage': 'url(http://sensanetworking.in/assets/img/logo.jpg)',
     'listStylePosition': 'inside'
   }
 }

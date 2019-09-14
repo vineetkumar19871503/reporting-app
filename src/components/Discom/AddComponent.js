@@ -89,7 +89,7 @@ class AddComponent extends React.Component {
           'Header': 'Actions',
           Cell: row => (
             <Row>
-              <Col md="6"><Button block size="sm" color="success" onClick={() => { this.fillEditForm(row); }}>Edit</Button></Col>
+              <Col md="12"><Button block size="sm" color="success" onClick={() => { this.fillEditForm(row); }}>Edit</Button></Col>
             </Row>
           )
         }
@@ -253,6 +253,7 @@ class AddComponent extends React.Component {
       self.showLoader();
       const fields = self.state.fields;
       fields.date = moment().format('MM/DD/YYYY');
+      fields.created_by = self.props.user._id;
       axios.post(
         config.apiUrl + 'discom/add',
         fields,
@@ -412,6 +413,7 @@ class AddComponent extends React.Component {
                         <option value="0.5W">0.5W</option>
                         <option value="9W">9W</option>
                         <option value="12W">12W</option>
+                        <option value="15W">15W</option>
                         <option value="18WT">18WT</option>
                         <option value="22WT">22WT</option>
                         <option value="StaiLight">StaiLight</option>
@@ -511,6 +513,7 @@ class AddComponent extends React.Component {
                         <option value="0.5W">0.5W</option>
                         <option value="9W">9W</option>
                         <option value="12W">12W</option>
+                        <option value="15W">15W</option>
                         <option value="18WT">18WT</option>
                         <option value="22WT">22WT</option>
                         <option value="StaiLight">StaiLight</option>
@@ -568,6 +571,7 @@ class AddComponent extends React.Component {
                           <option value="0.5W">0.5W</option>
                           <option value="9W">9W</option>
                           <option value="12W">12W</option>
+                          <option value="15W">15W</option>
                           <option value="18WT">18WT</option>
                           <option value="22WT">22WT</option>
                           <option value="StaiLight">StaiLight</option>

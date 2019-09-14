@@ -15,7 +15,7 @@ const AddDiscomWalletComponent = React.lazy(() => import('./components/DiscomWal
 const AddHighCourtComponent = React.lazy(() => import('./components/HighCourt/AddComponent'));
 const AddMachiyaComponent = React.lazy(() => import('./components/Machiya/AddComponent'));
 const AddYavukushComponent = React.lazy(() => import('./components/Yavukush/AddComponent'));
-
+const AddGeneralReceiptComponent = React.lazy(() => import('./components/GeneralReceipt/AddComponent'));
 
 const routes = [
   { path: '/', exact: true, name: 'Home', component: DefaultLayout },
@@ -32,6 +32,7 @@ const routes = [
   { path: '/high-court', name: 'High Court', component: AddHighCourtComponent },
   { path: '/machiya', name: 'Machiya', component: AddMachiyaComponent },
   { path: '/yavukush', name: 'Yavukush', component: AddYavukushComponent },
+  { path: '/general-receipt', name: 'General Receipt', component: AddGeneralReceiptComponent }
 ];
 
 export default routes;

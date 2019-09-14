@@ -99,7 +99,7 @@ class AddUserComponent extends React.Component {
     const self = this;
     self.validateForm(function () {
       const fields = self.state.fields;
-      fields.added_by = self.props.user._id;
+      fields.created_by = self.props.user._id;
       self.showLoader();
       axios.post(
         config.apiUrl + 'users/add',
