@@ -174,7 +174,7 @@ class AddComponent extends React.Component {
     let formIsValid = true;
     this.errors = {};
     formIsValid = this._validateField('required', 'name', formIsValid);
-    formIsValid = this._validateField('number', 'mobile', formIsValid);
+    formIsValid = this._validateField('required', 'mobile', formIsValid);
     formIsValid = this._validateField('required', 'card_type', formIsValid);
     formIsValid = this._validateField('required', 'amount', formIsValid);
     formIsValid = this._validateField('number', 'amount', formIsValid);
