@@ -286,7 +286,62 @@ class AddComponent extends React.Component {
           </Card>
         </Col>
       </Row>
+
       {
+        Object.keys(_p).length > 0 ?
+          <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
+            <div style={{ 'zoom': '65%' }}>
+              <table cellPadding="0" cellSpacing="0" style={{ "width": "80%", "margin": "0 auto" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ ...styles.allBorders, ...styles.padding10 }} colSpan="2" align="center">Payment Receipt</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Counter Detail</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Yavukush Sen - 93525 43549</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Customer Name</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{_p.consumer.consumer_name}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Customer Mobile No</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}></td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Transaction Date</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{this.getTime(_p.bill_submission_date)}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Service Name</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Electricity</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Operator</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>JODHPUR VIDYUT VITRAN NIGAM [Postpaid]</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Consumer No. / K No. / Parner Code</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{_p.consumer.k_number}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Amount</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{_p.amount.toFixed(4)}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Amount in cash</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Rupees {this.getAmount(_p.amount)} Only</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          : null
+      }
+
+
+      {/* OLD BILL PRINT FORMAT */}
+      {/* {
         Object.keys(_p).length > 0 ?
           <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
             <div style={{ 'zoom': '55%', 'float': 'left' }}>
@@ -372,7 +427,7 @@ class AddComponent extends React.Component {
           </div>
           :
           null
-      }
+      } */}
     </div>;
   }
 }
@@ -416,6 +471,9 @@ const styles = {
     'margin': '0 auto',
     'listStyleImage': 'url(http://sensanetworking.in/assets/img/logo.jpg)',
     'listStylePosition': 'inside'
+  },
+  'padding10': {
+    'padding': '10px'
   }
 }
 export default connect(mapStateToProps)(AddComponent);
