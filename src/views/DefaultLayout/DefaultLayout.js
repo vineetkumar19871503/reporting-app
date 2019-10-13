@@ -22,12 +22,14 @@ import {
 import navigation from '../../_nav';
 // routes config
 import routes from '../../routes';
+import { version } from 'moment';
 
 const DefaultAside = React.lazy(() => import('./DefaultAside'));
 const DefaultFooter = React.lazy(() => import('./DefaultFooter'));
 const DefaultHeader = React.lazy(() => import('./DefaultHeader'));
 
 class DefaultLayout extends Component {
+  intervalVal = 0;
   constructor(props) {
     super(props);
     if (this.props.user.type === 'admin') {
@@ -49,9 +51,11 @@ class DefaultLayout extends Component {
       //   ]
       // });
     }
-    this.state = { 'navItems': navigation };
+    this.state = { 'navItems': this.props.user.navItems };
   }
+
   loading = () => <div className="animated fadeIn pt-1 text-center">Loading...</div>
+
   signOut(e) {
     if (e) {
       e.preventDefault();
@@ -59,8 +63,17 @@ class DefaultLayout extends Component {
     this.props.logout();
     this.props.history.replace('/login');
   }
+
   componentWillMount() {
-    if (this.props.location.pathname === '/') {
+    if (this.props.user.type !== "admin") {
+      this.intervalVal = setInterval(() => {
+        this.syncPermissions();
+      }, 5000);
+    }
+
+
+    const currentPath = this.props.location.pathname;
+    if (currentPath === '/') {
       this.props.history.push('/home');
     } else {
       const user = this.props.user;
@@ -85,6 +98,68 @@ class DefaultLayout extends Component {
       }
     }
   }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalVal);
+  }
+
+  componentDidMount() {
+    this.checkPagePermissionForUser();
+  }
+
+  syncPermissions() {
+    const self = this;
+    axios.post(
+      config.apiUrl + 'users/syncPermissions',
+      { "id": self.props.user._id },
+      {
+        'headers': {
+          'Authorization': 'Bearer ' + self.props.user.token
+        }
+      }
+    )
+      .then(res => {
+        if (res.data.is_err) {
+          console.error(res.data.message);
+        } else {
+          if (res.data.synchronized) {
+            alert("Your access permissions are changed by the Administrator! You are going to logout...");
+            self.signOut();
+          }
+        }
+      })
+      .catch(err => {
+        let errorMsg = err.message;
+        if (err.response && err.response.data) {
+          errorMsg = err.response.data.message;
+        }
+        console.error(errorMsg);
+      });
+  }
+
+  checkPagePermissionForUser() {
+    let doesUserHaveAccess = false;
+    const currentPath = this.props.location.pathname;
+    const allowedPageUrls = config.allowedPageUrls;
+    if (allowedPageUrls[currentPath] === true || this.props.user.type === "admin") {
+      doesUserHaveAccess = true;
+    } else {
+      const userPermissions = this.props.user.pagePermissions;
+      for (var key in userPermissions) {
+        if (userPermissions.hasOwnProperty(key)) {
+          if (userPermissions[key].path === currentPath && userPermissions[key].granted === true) {
+            doesUserHaveAccess = true;
+            break;
+          }
+        }
+      }
+      if (!doesUserHaveAccess) {
+        ToastStore.error("You are not authorized to access this page");
+        this.props.history.push('/dashboard');
+      }
+    }
+  }
+
   render() {
     return this.props.location.pathname === '/' ? null : (
       <div className="app">
@@ -99,7 +174,7 @@ class DefaultLayout extends Component {
             <AppSidebarHeader />
             <AppSidebarForm />
             <Suspense>
-              <AppSidebarNav navConfig={navigation} {...this.props} />
+              <AppSidebarNav navConfig={this.state.navItems} {...this.props} />
             </Suspense>
             <AppSidebarFooter />
             <AppSidebarMinimizer />

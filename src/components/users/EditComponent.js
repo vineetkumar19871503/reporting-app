@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
 import { ToastContainer, ToastStore } from 'react-toasts';
+import PagePermissions from "./PagePermissions";
 import {
   Button,
   Card,
@@ -21,25 +22,27 @@ class EditUserComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      'userInfo': {},
       'fields': {
-        'name': '',
+        'fname': '',
+        'lname': '',
+        'address': '',
         'email': '',
-        'password': '',
-        'status': true
+        'status': 'true',
+        'pagePermissions': {}
       },
       'errors': {}
     };
     this.saveUser = this.saveUser.bind(this);
+    this.onPermissionChange = this.onPermissionChange.bind(this);
   }
+
   showLoader(show = true) {
     const ldr = document.getElementById('ajax-loader-container');
     show ? ldr.classList.remove('disp-none') : ldr.classList.add('disp-none');
   }
+
   componentDidMount() {
-    if (this.props.user.type !== 'admin') {
-      ToastStore.error("You are not authorized to perform this action");
-      this.props.history.push('/dashboard');
-    }
     document.title = "Edit User";
     const self = this;
     self.showLoader();
@@ -55,10 +58,15 @@ class EditUserComponent extends React.Component {
         self.showLoader(false);
         const user = res.data.data[0];
         self.setState({
+          'userInfo': user,
+          'prevUserInfo': JSON.parse(JSON.stringify(user)),
           'fields': {
-            'name': user.name,
+            'fname': user.fname,
+            'lname': user.lname,
+            'address': user.address,
             'email': user.email,
-            'status': user.status
+            'status': String(user.status),
+            'userPermissions': user.pagePermissions
           }
         });
       })
@@ -71,6 +79,7 @@ class EditUserComponent extends React.Component {
         ToastStore.error(errorMsg);
       });
   }
+
   changeInput(field, value) {
     if (field === 'status') {
       value = value === 'true';
@@ -79,19 +88,24 @@ class EditUserComponent extends React.Component {
     state['fields'][field] = value;
     this.setState(state);
   }
+
   validateForm(cb) {
     let formIsValid = true;
     this.errors = {};
-    formIsValid = this._validateField('required', 'name', formIsValid);
+    formIsValid = this._validateField('required', 'fname', formIsValid);
+    formIsValid = this._validateField('required', 'lname', formIsValid);
     formIsValid = this._validateField('required', 'email', formIsValid);
     formIsValid = this._validateField('email', 'email', formIsValid);
     // formIsValid = this._validateField('required', 'password', formIsValid);
-    // formIsValid = this._validateField('required', 'status', formIsValid);
+    // formIsValid = this._validateField('required', 're_password', formIsValid);
+    // formIsValid = this._validateField('matchPassword', 're_password', formIsValid);
+    formIsValid = this._validateField('required', 'status', formIsValid);
     this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
     }
   }
+
   _validateField(type = 'required', name, formIsValid) {
     let fields = this.state.fields;
     let isFieldValid = formIsValid;
@@ -123,16 +137,28 @@ class EditUserComponent extends React.Component {
         }
         break;
       }
+      case 'matchPassword': {
+        if (fields[name] !== fields['password']) {
+          isFieldValid = false;
+          this.errors[name] = "Passwords do not match";
+        }
+        break;
+      }
       default: return;
     }
     return isFieldValid;
   }
+
   saveUser(e) {
     e.preventDefault();
     const self = this;
     self.validateForm(function () {
       const fields = self.state.fields;
       fields.uid = self.props.match.params.id;
+      if (JSON.stringify(fields.userPermissions) !== JSON.stringify(self.state.prevUserInfo.pagePermissions)) {
+        fields.permissionsSynchronized = false;
+      }
+      self.showLoader();
       axios.post(
         config.apiUrl + 'users/edit',
         fields,
@@ -159,8 +185,16 @@ class EditUserComponent extends React.Component {
         });
     });
   }
+
+  onPermissionChange(pagePermissions) {
+    const st = this.state;
+    st.fields.pagePermissions = pagePermissions;
+    this.setState({ "fields": st.fields });
+  }
+
   render() {
     const _f = this.state.fields;
+    const isAdmin = this.props.user.type === "admin";
     return <div className="animated fadeIn">
       <Row>
         <Col>
@@ -171,37 +205,65 @@ class EditUserComponent extends React.Component {
             <Form onSubmit={this.saveUser}>
               <CardBody>
                 <ToastContainer store={ToastStore} />
-                <FormGroup>
-                  <Label htmlFor="name">Name</Label>
-                  <Input type="text" id="name" value={_f.name} onChange={e => this.changeInput('name', e.target.value)} placeholder="Enter Name" />
-                  <span className="form-err">{this.state.errors["name"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="email">Email</Label>
-                  <Input type="text" id="email" value={_f.email} onChange={e => this.changeInput('email', e.target.value)} placeholder="Enter Email" />
-                  <span className="form-err">{this.state.errors["email"]}</span>
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="password">Password</Label>
-                  <Input type="password" id="password" onChange={e => this.changeInput('password', e.target.value)} placeholder="Enter Password" />
-                  <span className="form-err">{this.state.errors["password"]}</span>
-                </FormGroup>
-                <FormGroup row>
-                  <Col md="2">
-                    <Label>Status</Label>
-                  </Col>
-                  <Col md="10">
-                    <FormGroup check inline className="radio">
-                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status1" name="status" checked={_f.status === true} value={true} />
-                      <Label check className="form-check-label" htmlFor="status1">Active</Label>
+                <Row>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label htmlFor="fname">First Name</Label>
+                      <Input type="text" id="fname" value={_f.fname} onChange={e => this.changeInput('fname', e.target.value)} placeholder="Enter First Name" />
+                      <span className="form-err">{this.state.errors["fname"]}</span>
                     </FormGroup>
-                    <FormGroup check inline className="radio">
-                      <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status2" name="status" checked={_f.status === false} value={false} />
-                      <Label check className="form-check-label" htmlFor="status2">Inactive</Label>
-                    </FormGroup>
-                    <span className="form-err">{this.state.errors["status"]}</span>
                   </Col>
-                </FormGroup>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label htmlFor="lname">Last Name</Label>
+                      <Input type="text" id="lname" value={_f.lname} onChange={e => this.changeInput('lname', e.target.value)} placeholder="Enter Last Name" />
+                      <span className="form-err">{this.state.errors["lname"]}</span>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label htmlFor="email">Email</Label>
+                      <Input type="text" autoComplete="off" id="email" value={_f.email} onChange={e => this.changeInput('email', e.target.value)} placeholder="Enter Email" />
+                      <span className="form-err">{this.state.errors["email"]}</span>
+                    </FormGroup>
+                  </Col>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label htmlFor="address">Address</Label>
+                      <Input type="textarea" id="address" value={_f.address} onChange={e => this.changeInput('address', e.target.value)} placeholder="Enter Address" />
+                      <span className="form-err">{this.state.errors["address"]}</span>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                {
+                  this.state.userInfo._id && isAdmin && this.props.match.params.id !== this.props.user._id ?
+                    <div>
+                      <FormGroup row>
+                        <Col md="2">
+                          <Label>Status</Label>
+                        </Col>
+                        <Col md="10">
+                          <FormGroup check inline className="radio">
+                            <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status1" name="status" checked={_f.status === "true"} value="true" />
+                            <Label check className="form-check-label" htmlFor="status1">Active</Label>
+                          </FormGroup>
+                          <FormGroup check inline className="radio">
+                            <Input className="form-check-input" onChange={e => this.changeInput('status', e.target.value)} type="radio" id="status2" name="status" checked={_f.status === "false"} value="false" />
+                            <Label check className="form-check-label" htmlFor="status2">Inactive</Label>
+                          </FormGroup>
+                          <span className="form-err">{this.state.errors["status"]}</span>
+                        </Col>
+                      </FormGroup>
+                      <Row>
+                        <Col md="12">
+                          <PagePermissions permissionChangeCb={this.onPermissionChange} userPermissions={this.state.userInfo.pagePermissions} />
+                        </Col>
+                      </Row>
+                    </div>
+                    : null
+                }
               </CardBody>
               <CardFooter>
                 <Button type="submit" size="sm" color="primary">Submit</Button>&nbsp;

@@ -1,4 +1,5 @@
-export default {
+const config = require("./config");
+const navItems = {
   items: [
     {
       name: 'Dashboard',
@@ -8,6 +9,23 @@ export default {
       //   variant: 'info',
       //   text: 'NEW',
       // },
+    },
+    {
+      name: 'Users',
+      url: '/users',
+      icon: 'icon-user',
+      children: [
+        {
+          name: 'Add User',
+          url: '/users/add',
+          icon: 'icon-plus',
+        },
+        {
+          name: 'Users List',
+          url: '/users/list',
+          icon: 'icon-list',
+        }
+      ]
     },
     {
       name: 'Bills',
@@ -66,23 +84,7 @@ export default {
       url: '/general-receipt',
       icon: 'icon-plus'
     },
-    // {
-    //   name: 'Users',
-    //   url: '/users',
-    //   icon: 'icon-user',
-    //   children: [
-    //     {
-    //       name: 'Add User',
-    //       url: '/users/add',
-    //       icon: 'icon-plus',
-    //     },
-    //     {
-    //       name: 'Users List',
-    //       url: '/users/list',
-    //       icon: 'icon-list',
-    //     }
-    //   ]
-    // },
+
     // {
     //   name: 'Buttons',
     //   url: '/buttons',
@@ -110,5 +112,57 @@ export default {
     //     },
     //   ],
     // },
-  ],
+  ]
 };
+
+function filterNavItems(userPermissions) {
+  try {
+    let filteredNavItems = {};
+    for (var key in userPermissions) {
+      if (userPermissions.hasOwnProperty(key)) {
+        filteredNavItems[userPermissions[key].path] = userPermissions[key].granted;
+      }
+    }
+    return filteredNavItems;
+  } catch (err) {
+    console.error(err);
+    return {};
+  }
+}
+
+function getNavItems(userPermissions, isAdmin) {
+  if (isAdmin === true) {
+    return navItems;
+  }
+  if (!userPermissions) {
+    return { "items": [] };
+  }
+  const allowedUrls = config.allowedPageUrls;
+  userPermissions = filterNavItems(userPermissions);
+  let navArr = navItems.items;
+  let filteredNavArr = [];
+  for (let navIt = 0; navIt < navArr.length; navIt++) {
+    const n = navArr[navIt];
+    if (allowedUrls[n.url] === true) {
+      filteredNavArr.push(n);
+      continue;
+    }
+    if (n.children) {
+      let filteredChildNav = [];
+      for (let chNavIt = 0; chNavIt < n.children.length; chNavIt++) {
+        const cn = n.children[chNavIt];
+        if (userPermissions[cn.url]) {
+          filteredChildNav.push(cn);
+        }
+      }
+      if (filteredChildNav.length > 0) {
+        n.children = filteredChildNav;
+        filteredNavArr.push(n);
+      }
+    } else if (userPermissions[n.url] || userPermissions[n.url] === undefined) {
+      filteredNavArr.push(n);
+    }
+  }
+  return { "items": filteredNavArr };
+}
+module.exports = { getNavItems, navItems };

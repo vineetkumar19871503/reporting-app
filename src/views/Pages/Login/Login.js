@@ -5,6 +5,7 @@ import { Button, Card, CardBody, CardGroup, Col, Container, Form, Input, InputGr
 import { login } from '../../../actions/UserAction';
 import { ToastContainer, ToastStore } from 'react-toasts';
 import config from '../../../config.js';
+import { getNavItems } from '../../../_nav';
 
 class Login extends Component {
   constructor(props) {
@@ -41,7 +42,10 @@ class Login extends Component {
           if (res.data.is_err) {
             ToastStore.error(res.data.message);
           } else {
-            self.props.login(res.data.data);
+            const userInfo = res.data.data;
+            const isAdmin = userInfo.type==="admin";
+            res.data.data.navItems = getNavItems(userInfo.pagePermissions, isAdmin);
+            self.props.login(userInfo);
             self.props.history.push('/dashboard');
           }
         })
