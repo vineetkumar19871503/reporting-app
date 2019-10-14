@@ -30,6 +30,7 @@ const DefaultHeader = React.lazy(() => import('./DefaultHeader'));
 
 class DefaultLayout extends Component {
   intervalVal = 0;
+  currentPath = null;
   constructor(props) {
     super(props);
     if (this.props.user.type === 'admin') {
@@ -68,12 +69,16 @@ class DefaultLayout extends Component {
     if (this.props.user.type !== "admin") {
       this.intervalVal = setInterval(() => {
         this.syncPermissions();
-      }, 5000);
+      }, 3000);
     }
 
+    this.unlisten = this.props.history.listen((location, action) => {
+      this.currentPath = location.pathname;
+      this.checkPagePermissionForUser();
+    });
 
-    const currentPath = this.props.location.pathname;
-    if (currentPath === '/') {
+    this.currentPath = this.props.location.pathname;
+    if (this.currentPath === '/') {
       this.props.history.push('/home');
     } else {
       const user = this.props.user;
@@ -100,6 +105,7 @@ class DefaultLayout extends Component {
   }
 
   componentWillUnmount() {
+    this.unlisten();
     clearInterval(this.intervalVal);
   }
 
@@ -137,25 +143,28 @@ class DefaultLayout extends Component {
       });
   }
 
-  checkPagePermissionForUser() {
+  checkPagePermissionForUser(url) {
     let doesUserHaveAccess = false;
-    const currentPath = this.props.location.pathname;
-    const allowedPageUrls = config.allowedPageUrls;
-    if (allowedPageUrls[currentPath] === true || this.props.user.type === "admin") {
-      doesUserHaveAccess = true;
-    } else {
-      const userPermissions = this.props.user.pagePermissions;
-      for (var key in userPermissions) {
-        if (userPermissions.hasOwnProperty(key)) {
-          if (userPermissions[key].path === currentPath && userPermissions[key].granted === true) {
-            doesUserHaveAccess = true;
-            break;
+    const userInfo = this.props.user;
+    if (typeof userInfo == "object" && Object.keys(userInfo).length > 0) {
+      this.currentPath = this.currentPath ? this.currentPath : this.props.location.pathname;
+      const allowedPageUrls = config.allowedPageUrls;
+      if (allowedPageUrls[this.currentPath] === true || userInfo.type === "admin") {
+        doesUserHaveAccess = true;
+      } else {
+        const userPermissions = userInfo.pagePermissions;
+        for (var key in userPermissions) {
+          if (userPermissions.hasOwnProperty(key)) {
+            if (userPermissions[key].path === this.currentPath && userPermissions[key].granted === true) {
+              doesUserHaveAccess = true;
+              break;
+            }
           }
         }
-      }
-      if (!doesUserHaveAccess) {
-        ToastStore.error("You are not authorized to access this page");
-        this.props.history.push('/dashboard');
+        if (!doesUserHaveAccess) {
+          ToastStore.error("You are not authorized to access this page");
+          this.props.history.push('/dashboard');
+        }
       }
     }
   }
