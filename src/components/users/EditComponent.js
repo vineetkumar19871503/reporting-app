@@ -23,18 +23,23 @@ class EditUserComponent extends React.Component {
     super(props);
     this.state = {
       'userInfo': {},
+      'change_password_checked': false,
       'fields': {
         'fname': '',
         'lname': '',
         'address': '',
         'email': '',
         'status': 'true',
+        'password': '',
+        'confirm_password': '',
         'pagePermissions': {}
       },
       'errors': {}
     };
     this.saveUser = this.saveUser.bind(this);
     this.onPermissionChange = this.onPermissionChange.bind(this);
+    this.resetForm = this.resetForm.bind(this);
+    this.onChangePasswordChecked = this.onChangePasswordChecked.bind(this);
   }
 
   showLoader(show = true) {
@@ -89,7 +94,26 @@ class EditUserComponent extends React.Component {
     this.setState(state);
   }
 
+  resetForm(e) {
+    let state = this.state;
+    state.fields = {
+      'fname': '',
+      'lname': '',
+      'address': '',
+      'email': '',
+      'status': 'true',
+      'password': '',
+      'confirm_password': '',
+      'pagePermissions': state.fields.userPermissions
+    };
+    state.userInfo.pagePermissions = null;
+    this.setState(state, () => {
+      this.onPermissionChange(this.state.userInfo.pagePermissions);
+    });
+  }
+
   validateForm(cb) {
+    const isChangePasswordChecked = this.state.change_password_checked;
     let formIsValid = true;
     this.errors = {};
     formIsValid = this._validateField('required', 'fname', formIsValid);
@@ -100,10 +124,26 @@ class EditUserComponent extends React.Component {
     // formIsValid = this._validateField('required', 're_password', formIsValid);
     // formIsValid = this._validateField('matchPassword', 're_password', formIsValid);
     formIsValid = this._validateField('required', 'status', formIsValid);
+    if (isChangePasswordChecked) {
+      formIsValid = this._validateField('required', 'password', formIsValid);
+      formIsValid = this._validateField('required', 'confirm_password', formIsValid);
+      formIsValid = this._validateField('matchPassword', 'confirm_password', formIsValid);
+    }
     this.setState({ 'errors': this.errors });
     if (formIsValid) {
       cb();
     }
+  }
+
+  onChangePasswordChecked(checked) {
+    this.setState({ "change_password_checked": !this.state.change_password_checked }, () => {
+      const st = this.state;
+      if (!st.change_password_checked) {
+        st.fields.password = '';
+        st.fields.confirm_password = '';
+        delete st.errors.confirm_password;
+      }
+    });
   }
 
   _validateField(type = 'required', name, formIsValid) {
@@ -153,11 +193,17 @@ class EditUserComponent extends React.Component {
     e.preventDefault();
     const self = this;
     self.validateForm(function () {
-      const fields = self.state.fields;
+      const st = JSON.parse(JSON.stringify(self.state));
+      const fields = st.fields;
       fields.uid = self.props.match.params.id;
       if (JSON.stringify(fields.userPermissions) !== JSON.stringify(self.state.prevUserInfo.pagePermissions)) {
         fields.permissionsSynchronized = false;
       }
+      if (!st.change_password_checked) {
+        delete fields.password;
+      }
+      delete fields.confirm_password;
+      delete fields.change_password_checked;
       self.showLoader();
       axios.post(
         config.apiUrl + 'users/edit',
@@ -237,6 +283,40 @@ class EditUserComponent extends React.Component {
                     </FormGroup>
                   </Col>
                 </Row>
+                <Row>
+                  <Col md="12">
+                    <FormGroup check>
+                      <Label check>
+                        <Input type="checkbox" value={this.state.change_password_checked} checked={this.state.change_password_checked === true} onChange={e => this.onChangePasswordChecked(e.target.value)} /> Change Password?
+                    </Label>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                {
+                  this.state.change_password_checked ?
+                    <div>
+                      <br />
+                      <Row>
+                        <Col md="6">
+                          <FormGroup>
+                            <Label htmlFor="password">Password</Label>
+                            <Input type="password" autoComplete="new-password" id="password" onChange={e => this.changeInput('password', e.target.value)} placeholder="Enter Password" />
+                            <span className="form-err">{this.state.errors["password"]}</span>
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup>
+                            <Label htmlFor="confirm_password">Re-Enter Password</Label>
+                            <Input type="password" autoComplete="new-password" id="confirm_password" onChange={e => this.changeInput('confirm_password', e.target.value)} placeholder="Re-Enter Password" />
+                            <span className="form-err">{this.state.errors["confirm_password"]}</span>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                    </div>
+                    :
+                    null
+                }
+                <br />
                 {
                   this.state.userInfo._id && isAdmin && this.props.match.params.id !== this.props.user._id ?
                     <div>
@@ -258,7 +338,15 @@ class EditUserComponent extends React.Component {
                       </FormGroup>
                       <Row>
                         <Col md="12">
-                          <PagePermissions permissionChangeCb={this.onPermissionChange} userPermissions={this.state.userInfo.pagePermissions} />
+                          {
+                            this.state.userInfo.pagePermissions ?
+                              <PagePermissions permissionChangeCb={this.onPermissionChange} userPermissions={this.state.userInfo.pagePermissions} />
+                              :
+                              <div>
+                                <PagePermissions permissionChangeCb={this.onPermissionChange} />
+                              </div>
+                          }
+
                         </Col>
                       </Row>
                     </div>
@@ -267,7 +355,7 @@ class EditUserComponent extends React.Component {
               </CardBody>
               <CardFooter>
                 <Button type="submit" size="sm" color="primary">Submit</Button>&nbsp;
-                <Button type="reset" size="sm" color="danger">Reset</Button>
+                <Button type="reset" size="sm" color="danger" onClick={this.resetForm}>Reset</Button>
               </CardFooter>
             </Form>
           </Card>

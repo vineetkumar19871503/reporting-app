@@ -28,7 +28,7 @@ class AddUserComponent extends React.Component {
         'address': '',
         'email': '',
         'password': '',
-        're_password': '',
+        'confirm_password': '',
         'pagePermissions': {},
         'status': 'true'
       },
@@ -62,8 +62,8 @@ class AddUserComponent extends React.Component {
     formIsValid = this._validateField('required', 'email', formIsValid);
     formIsValid = this._validateField('email', 'email', formIsValid);
     formIsValid = this._validateField('required', 'password', formIsValid);
-    formIsValid = this._validateField('required', 're_password', formIsValid);
-    formIsValid = this._validateField('matchPassword', 're_password', formIsValid);
+    formIsValid = this._validateField('required', 'confirm_password', formIsValid);
+    formIsValid = this._validateField('matchPassword', 'confirm_password', formIsValid);
     formIsValid = this._validateField('required', 'status', formIsValid);
     this.setState({ 'errors': this.errors });
     if (formIsValid) {
@@ -195,9 +195,9 @@ class AddUserComponent extends React.Component {
                   </Col>
                   <Col md="4">
                     <FormGroup>
-                      <Label htmlFor="re_password">Re-Enter Password</Label>
-                      <Input type="password" autoComplete="new-password" id="re_password" onChange={e => this.changeInput('re_password', e.target.value)} placeholder="Re-Enter Password" />
-                      <span className="form-err">{this.state.errors["re_password"]}</span>
+                      <Label htmlFor="confirm_password">Re-Enter Password</Label>
+                      <Input type="password" autoComplete="new-password" id="confirm_password" onChange={e => this.changeInput('confirm_password', e.target.value)} placeholder="Re-Enter Password" />
+                      <span className="form-err">{this.state.errors["confirm_password"]}</span>
                     </FormGroup>
                   </Col>
                   <Col md="4">

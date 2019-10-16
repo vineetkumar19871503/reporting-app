@@ -298,7 +298,7 @@ class AddComponent extends React.Component {
                   </tr>
                   <tr>
                     <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Counter Detail</td>
-                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Yavukush Sen - 93525 43549</td>
+                    <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Yavukush Sen - 9928268192</td>
                   </tr>
                   <tr>
                     <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Customer Name</td>
