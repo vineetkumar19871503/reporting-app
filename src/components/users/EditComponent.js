@@ -86,9 +86,6 @@ class EditUserComponent extends React.Component {
   }
 
   changeInput(field, value) {
-    if (field === 'status') {
-      value = value === 'true';
-    }
     const state = Object.assign({}, this.state);
     state['fields'][field] = value;
     this.setState(state);
