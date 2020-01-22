@@ -29,6 +29,7 @@ class ListComponent extends React.Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.updateToPaid = this.updateToPaid.bind(this);
     this.state = {
+      'can_view_all_records': false,
       'search': {
         'k_number': '',
         'startDate': null,
@@ -142,6 +143,10 @@ class ListComponent extends React.Component {
 
   componentDidMount() {
     const self = this;
+    const pagePermissions = this.props.user.pagePermissions;
+    if (pagePermissions && pagePermissions.can_view_all_records && pagePermissions.can_view_all_records.granted === true) {
+      // this.setState({ "can_view_all_records": true });
+    }
     document.title = "Bills";
     this.getBills();
     document.getElementById('dummyImg').addEventListener('load', function () {
@@ -288,6 +293,8 @@ class ListComponent extends React.Component {
                 data={this.state.bills}
                 columns={this.state.cols}
                 defaultPageSize={10}
+                pageSize={this.state.bills.length}
+                showPagination={false}
                 className="-striped -highlight"
               />
 
@@ -296,46 +303,46 @@ class ListComponent extends React.Component {
                 Object.keys(_p).length > 0 ?
                   <div id="printContainer" style={{ 'padding': '20px', 'position': 'fixed', 'top': '-10000px' }}>
                     <div style={{ 'zoom': '65%' }}>
-                      <table cellPadding="0" cellSpacing="0" style={{"width": "80%", "margin": "0 auto"}}>
+                      <table cellPadding="0" cellSpacing="0" style={{ "width": "80%", "margin": "0 auto" }}>
                         <tbody>
                           <tr>
-                            <td style={{...styles.allBorders, ...styles.padding10}} colSpan="2" align="center">Payment Receipt</td>
+                            <td style={{ ...styles.allBorders, ...styles.padding10 }} colSpan="2" align="center">Payment Receipt</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Counter Detail</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>Yavukush Sen - 9928268192</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Counter Detail</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Yavukush Sen - 9928268192</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Customer Name</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>{_p.consumer.consumer_name}</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Customer Name</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{_p.consumer.consumer_name}</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Customer Mobile No</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}></td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Customer Mobile No</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}></td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Transaction Date</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>{this.getTime(_p.bill_submission_date)}</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Transaction Date</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{this.getTime(_p.bill_submission_date)}</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Service Name</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>Electricity</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Service Name</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Electricity</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Operator</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>JODHPUR VIDYUT VITRAN NIGAM [Postpaid]</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Operator</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>JODHPUR VIDYUT VITRAN NIGAM [Postpaid]</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Consumer No. / K No. / Parner Code</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>{_p.consumer.k_number}</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Consumer No. / K No. / Parner Code</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{_p.consumer.k_number}</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Amount</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>{_p.amount.toFixed(4)}</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Amount</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>{_p.amount.toFixed(4)}</td>
                           </tr>
                           <tr>
-                            <td style={{...styles.allBordersExceptTop, ...styles.padding10}}>Amount in cash</td>
-                            <td style={{...styles.allBordersExceptTopAndLeft, ...styles.padding10}}>Rupees {this.getAmount(_p.amount)} Only</td>
+                            <td style={{ ...styles.allBordersExceptTop, ...styles.padding10 }}>Amount in cash</td>
+                            <td style={{ ...styles.allBordersExceptTopAndLeft, ...styles.padding10 }}>Rupees {this.getAmount(_p.amount)} Only</td>
                           </tr>
                         </tbody>
                       </table>

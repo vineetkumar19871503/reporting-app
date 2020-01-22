@@ -51,6 +51,11 @@ export default class PagePermissions extends React.Component {
           };
         }
       }
+      // navItems["can_view_all_records"] = {
+      //   "name": "Can View All Records",
+      //   "path": "",
+      //   "granted": false
+      // };
     }
     this.setState({ "navItems": navItems });
   }

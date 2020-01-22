@@ -161,7 +161,9 @@ class ListComponent extends React.Component {
               <ReactTable
                 data={this.state.users}
                 columns={this.state.cols}
+                showPagination={false}
                 defaultPageSize={10}
+                pageSize={this.state.users.length}
                 className="-striped -highlight"
               />
             </CardBody>

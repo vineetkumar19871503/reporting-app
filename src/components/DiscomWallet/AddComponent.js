@@ -286,7 +286,7 @@ class AddComponent extends React.Component {
       self.showLoader();
       const fields = Object.assign({}, self.state.edit_fields);
       fields.reminder_date = moment(new Date(fields.reminder_date)).format("MM/DD/YYYY");
-      fields.date = moment().format('MM/DD/YYYY');
+      // fields.date = moment().format('MM/DD/YYYY');
       fields.display_date = moment(fields.date).format("DD/MM/YYYY");
       axios.post(
         config.apiUrl + 'discomwallet/edit',
@@ -459,6 +459,8 @@ class AddComponent extends React.Component {
                 data={this.state.records}
                 columns={this.state.cols}
                 defaultPageSize={10}
+                pageSize={this.state.records.length}
+                showPagination={false}
                 className="-striped -highlight"
               />
             </CardBody>
