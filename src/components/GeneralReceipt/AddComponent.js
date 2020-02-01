@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReactTable from "react-table";
 import "react-table/react-table.css";
+import '../../print-list.css';
 import { ToastContainer, ToastStore } from 'react-toasts';
 import {
   Button,
@@ -27,6 +28,7 @@ import config from '../../config.js';
 import methods from '../../globals/methods';
 class AddComponent extends React.Component {
   errors = {};
+  amountSum = 0;
   constructor(props) {
     super(props);
     this.state = {
@@ -73,7 +75,8 @@ class AddComponent extends React.Component {
         },
         {
           'Header': 'Amount',
-          'accessor': 'amount'
+          'accessor': 'amount',
+          'Footer': (<div><strong>Total: </strong><span id='amountSum'>{this.amountSum}</span></div>)
         },
         {
           'Header': 'Description',
@@ -349,12 +352,17 @@ class AddComponent extends React.Component {
   }
 
   render() {
+    this.amountSum = this.state.records.reduce((total, { amount }) => total += Math.round(amount), 0);
+    const amountSumContainer =  document.getElementById("amountSum");
+    if(amountSumContainer) {
+      amountSumContainer.innerHTML = this.amountSum;
+    }
     const _p = this.state.printData;
     return <div className="animated fadeIn">
       <img alt="dummy-img" id="dummyImg" style={{ 'display': 'none' }} />
       <Row>
         <Col>
-          <Card>
+          <Card className="hide-for-print">
             <ToastContainer store={ToastStore} />
             <CardHeader>
               <strong>General Receipt - Add</strong>
@@ -424,7 +432,7 @@ class AddComponent extends React.Component {
           {/* =================== Table And Search Form Start =================== */}
           <Card>
             <CardBody>
-              <Form onSubmit={this.searchData}>
+              <Form onSubmit={this.searchData} className="hide-for-print">
                 <Row>
                   <Col md="3">
                     <FormGroup>
@@ -458,11 +466,12 @@ class AddComponent extends React.Component {
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <br />
                     <div style={{ paddingTop: '6px' }}>
                       <Button color="primary" size="sm" className="px-4">Search</Button>&nbsp;
-                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>
+                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>&nbsp;
+                      <Button color="warning" size="sm" onClick={() => window.print()} className="px-4">Print List</Button>
                     </div>
                   </Col>
                 </Row>

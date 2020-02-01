@@ -1,0 +1,9 @@
+@media print {
+    .app-header,
+    .app-footer,
+    .sidebar,
+    .breadcrumb,
+    .hide-for-print {
+        display:none;
+    }
+}

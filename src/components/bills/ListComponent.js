@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 import { ToastContainer, ToastStore } from 'react-toasts';
 import DatePicker from "react-datepicker";
+import '../../print-list.css';
 import "react-datepicker/dist/react-datepicker.css";
 import {
   Button,
@@ -23,6 +24,7 @@ import config from '../../config.js';
 import methods from '../../globals/methods';
 class ListComponent extends React.Component {
   errors = {};
+  amountSum = 0;
   constructor(props) {
     super(props);
     this.searchBill = this.searchBill.bind(this);
@@ -45,7 +47,8 @@ class ListComponent extends React.Component {
         },
         {
           'Header': 'Amount',
-          'accessor': 'amount'
+          'accessor': 'amount',
+          'Footer': (<div><strong>Total: </strong><span id='amountSum'>{this.amountSum}</span></div>)
         },
         {
           'Header': 'Payment Mode',
@@ -70,7 +73,7 @@ class ListComponent extends React.Component {
             <Row className="px-3">
               {!row.original.paid ?
                 <Col md="3" className="p-0 mx-1"><Button block size="sm" color="default" onClick={() => this.updateToPaid(row)}>Paid</Button></Col>
-                : null
+                : <Col md="3" className="p-0 mx-1"></Col>
               }
               <Col md="3" className="p-0 mx-1"><Button block size="sm" color="primary" onClick={() => this.printBill(row)}>Print</Button></Col>
               <Col md="4" className="p-0 mx-1"><Button block size="sm" color="success" onClick={() => this.printReport(row)}>Report</Button></Col>
@@ -237,6 +240,11 @@ class ListComponent extends React.Component {
   }
 
   render() {
+    this.amountSum = this.state.bills.reduce((total, { amount }) => total += Math.round(amount), 0);
+    const amountSumContainer =  document.getElementById("amountSum");
+    if(amountSumContainer) {
+      amountSumContainer.innerHTML = this.amountSum;
+    }
     const _p = this.state.printData;
     const _r = this.state.reportData;
     return <div className="animated fadeIn">
@@ -246,13 +254,13 @@ class ListComponent extends React.Component {
           <Card>
             <CardHeader>
               <strong>Bills</strong>
-              <Button size="sm" className="float-right" color="success" onClick={() => this.props.history.push('/bills/add')}>Add Bill</Button>
+              <Button size="sm" className="float-right hide-for-print" color="success" onClick={() => this.props.history.push('/bills/add')}>Add Bill</Button>
             </CardHeader>
             <CardBody>
               <ToastContainer store={ToastStore} />
-              <Form onSubmit={this.searchBill}>
+              <Form onSubmit={this.searchBill} className="hide-for-print">
                 <Row>
-                  <Col md="3">
+                  <Col md="2">
                     <FormGroup>
                       <Label htmlFor="k_number">K Number</Label>
                       <Input type="text" id="k_number" maxLength="12" value={this.state.search.k_number} onChange={e => this.changeInput('k_number', e.target.value)} placeholder="Enter K Number" />
@@ -280,11 +288,12 @@ class ListComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <br />
                     <div style={{ paddingTop: '6px' }}>
                       <Button color="primary" size="sm" className="px-4">Search</Button>&nbsp;
-                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>
+                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>&nbsp;
+                      <Button color="warning" size="sm" onClick={() => window.print()} className="px-4">Print List</Button>
                     </div>
                   </Col>
                 </Row>

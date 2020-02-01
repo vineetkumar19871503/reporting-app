@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReactTable from "react-table";
 import "react-table/react-table.css";
+import '../../print-list.css';
 import { ToastContainer, ToastStore } from 'react-toasts';
 import {
   Button,
@@ -307,7 +308,7 @@ class AddComponent extends React.Component {
     return <div className="animated fadeIn">
       <Row>
         <Col>
-          <Card>
+          <Card className="hide-for-print">
             <ToastContainer store={ToastStore} />
             <CardHeader>
               <strong>Discom Pole - Add</strong>
@@ -367,9 +368,9 @@ class AddComponent extends React.Component {
           {/* =================== Tabble And Search Form Start =================== */}
           <Card>
             <CardBody>
-              <Form onSubmit={this.searchData}>
+              <Form onSubmit={this.searchData} className="hide-for-print">
                 <Row>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="start_date">Date From</Label><br />
                       <DatePicker
@@ -380,7 +381,7 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="end_date">Date To</Label><br />
                       <DatePicker
@@ -391,11 +392,12 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="4">
                     <br />
                     <div style={{ paddingTop: '6px' }}>
                       <Button color="primary" size="sm" className="px-4">Search</Button>&nbsp;
-                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>
+                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>&nbsp;
+                      <Button color="warning" size="sm" onClick={() => window.print()} className="px-4">Print List</Button>
                     </div>
                   </Col>
                 </Row>

@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReactTable from "react-table";
 import "react-table/react-table.css";
+import '../../print-list.css';
 import { ToastContainer, ToastStore } from 'react-toasts';
 import ReactAutocomplete from 'react-autocomplete';
 import {
@@ -27,6 +28,7 @@ import {
 import config from '../../config.js';
 class AddComponent extends React.Component {
   errors = {};
+  amountSum = 0;
   constructor(props) {
     super(props);
     this.state = {
@@ -70,7 +72,8 @@ class AddComponent extends React.Component {
         },
         {
           'Header': 'Amount',
-          'accessor': 'amount'
+          'accessor': 'amount',
+          'Footer': (<div><strong>Total: </strong><span id='amountSum'>{this.amountSum}</span></div>)
         },
         {
           'Header': 'Description',
@@ -379,10 +382,15 @@ class AddComponent extends React.Component {
   }
 
   render() {
+    this.amountSum = this.state.records.reduce((total, { amount }) => total += Math.round(amount), 0);
+    const amountSumContainer = document.getElementById("amountSum");
+    if (amountSumContainer) {
+      amountSumContainer.innerHTML = this.amountSum;
+    }
     return <div className="animated fadeIn">
       <Row>
         <Col>
-          <Card>
+          <Card className="hide-for-print">
             <ToastContainer store={ToastStore} />
             <CardHeader>
               <strong>Yavukush - Add</strong>
@@ -474,9 +482,9 @@ class AddComponent extends React.Component {
           {/* =================== Table And Search Form Start =================== */}
           <Card>
             <CardBody>
-              <Form onSubmit={this.searchData}>
+              <Form onSubmit={this.searchData} className="hide-for-print">
                 <Row>
-                  <Col md="2">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="start_date">From Date</Label><br />
                       <DatePicker
@@ -487,7 +495,7 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="2">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="end_date">To Date</Label><br />
                       <DatePicker
@@ -498,7 +506,7 @@ class AddComponent extends React.Component {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md="2">
+                  <Col md="4">
                     <FormGroup>
                       <Label htmlFor="search_card_type">Debit/Credit</Label>
                       <Input type="select" id="search_card_type" value={this.state.fields.search_card_type} onChange={e => this.changeInput('search_card_type', e.target.value, 'search')}>
@@ -508,7 +516,9 @@ class AddComponent extends React.Component {
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                </Row>
+                <Row>
+                  <Col md="7">
                     <FormGroup>
                       <Label htmlFor="search_entry_type">Entry Type</Label>
                       <Input type="select" id="search_entry_type" value={this.state.fields.search_entry_type} onChange={e => this.changeInput('search_entry_type', e.target.value, 'search')}>
@@ -522,11 +532,12 @@ class AddComponent extends React.Component {
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md="3">
+                  <Col md="5">
                     <br />
                     <div style={{ paddingTop: '6px', textAlign: 'right' }}>
                       <Button color="primary" size="sm" className="px-4">Search</Button>&nbsp;
-                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>
+                      <Button color="danger" size="sm" onClick={this.clearSearch} className="px-4">Clear</Button>&nbsp;
+                      <Button color="warning" size="sm" onClick={() => window.print()} className="px-4">Print List</Button>
                     </div>
                   </Col>
                 </Row>
